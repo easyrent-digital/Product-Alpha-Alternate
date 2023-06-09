@@ -4,7 +4,7 @@ import { strings as commonStrings } from '../lang/common'
 import { strings } from '../lang/user-list'
 import * as Helper from '../common/Helper'
 import * as UserService from '../services/UserService'
-import Backdrop from '../components/SimpleBackdrop'
+import Backdrop from './SimpleBackdrop'
 import {
     DataGrid,
     frFR,

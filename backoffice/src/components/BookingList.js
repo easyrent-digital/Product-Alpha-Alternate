@@ -6,7 +6,7 @@ import { strings } from '../lang/booking-list'
 import * as Helper from '../common/Helper'
 import * as BookingService from '../services/BookingService'
 import StatusList from './StatusList'
-import Backdrop from '../components/SimpleBackdrop'
+import Backdrop from './SimpleBackdrop'
 import {
     DataGrid,
     frFR,

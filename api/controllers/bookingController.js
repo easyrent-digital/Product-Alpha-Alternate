@@ -21,7 +21,7 @@ const SMTP_PORT = process.env.BC_SMTP_PORT
 const SMTP_USER = process.env.BC_SMTP_USER
 const SMTP_PASS = process.env.BC_SMTP_PASS
 const SMTP_FROM = process.env.BC_SMTP_FROM
-const BACKEND_HOST = process.env.BC_BACKEND_HOST
+const BACKOFFICE_HOST = process.env.BC_BACKOFFICE_HOST
 const FRONTEND_HOST = process.env.BC_FRONTEND_HOST
 const EXPO_ACCESS_TOKEN = process.env.BC_EXPO_ACCESS_TOKEN
 
@@ -78,7 +78,7 @@ const notifyCompany = async (user, booking, company, notificationMessage) => {
         html: '<p>' + strings.HELLO + company.fullName + ',<br><br>'
             + message + '<br><br>'
 
-            + Helper.joinURL(BACKEND_HOST, `booking?b=${booking._id}`)
+            + Helper.joinURL(BACKOFFICE_HOST, `booking?b=${booking._id}`)
             + '<br><br>'
 
             + strings.REGARDS + '<br>'

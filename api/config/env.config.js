@@ -6,7 +6,7 @@ const Env = {
         USER: 'user'
     },
     APP_TYPE: {
-        BACKEND: 'backend',
+        BACKOFFICE: 'backoffice',
         FRONTEND: 'frontend'
     },
     CAR_TYPE: {

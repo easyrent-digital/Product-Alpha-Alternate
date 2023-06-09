@@ -37,12 +37,19 @@ const App = () => (
 		<div className='App'>
 			<Suspense fallback={<></>}>
 				<Routes>
-					<Route exact path='/sign-in' element={<SignIn />} />
+					<Route exact path='/sign-up' element={<SignUp />} />
 					<Route exact path='/activate' element={<Activate />} />
+					<Route exact path='/sign-in' element={<SignIn />} />
 					<Route exact path='/forgot-password' element={<ForgotPassword />} />
 					<Route exact path='/reset-password' element={<ResetPassword />} />
-					<Route exact path='/sign-up' element={<SignUp />} />
+					<Route exact path='/change-password' element={<ChangePassword />} />
+					<Route exact path='/users' element={<Users />} />
+					<Route exact path='/user' element={<User />} />
+					<Route exact path='/create-user' element={<CreateUser />} />
+					<Route exact path='/update-user' element={<UpdateUser />} />
 					<Route exact path='/' element={<Bookings />} />
+					<Route exact path='/booking' element={<Booking />} />
+					<Route exact path='/create-booking' element={<CreateBooking />} />
 					<Route exact path='/suppliers' element={<Companies />} />
 					<Route exact path='/supplier' element={<Company />} />
 					<Route exact path='/create-supplier' element={<CreateCompany />} />
@@ -54,19 +61,11 @@ const App = () => (
 					<Route exact path="/car" element={<Car />} />
 					<Route exact path='/create-car' element={<CreateCar />} />
 					<Route exact path='/update-car' element={<UpdateCar />} />
-					<Route exact path='/booking' element={<Booking />} />
-					<Route exact path='/create-booking' element={<CreateBooking />} />
-					<Route exact path='/users' element={<Users />} />
-					<Route exact path='/user' element={<User />} />
-					<Route exact path='/create-user' element={<CreateUser />} />
-					<Route exact path='/update-user' element={<UpdateUser />} />
 					<Route exact path='/settings' element={<Settings />} />
 					<Route exact path='/notifications' element={<Notifications />} />
-					<Route exact path='/change-password' element={<ChangePassword />} />
 					<Route exact path='/about' element={<About />} />
 					<Route exact path='/tos' element={<ToS />} />
 					<Route exact path='/contact' element={<Contact />} />
-
 					<Route path='*' element={<NoMatch header />} />
 				</Routes>
 			</Suspense>

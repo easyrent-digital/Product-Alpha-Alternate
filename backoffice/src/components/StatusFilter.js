@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { strings as commonStrings } from '../lang/common'
 import * as Helper from '../common/Helper'
-import Accordion from '../components/Accordion'
+import Accordion from './Accordion'
 
 import '../assets/css/status-filter.css'
 

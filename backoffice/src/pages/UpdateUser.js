@@ -197,7 +197,7 @@ const UpdateUser = () => {
     }
 
     const handleResendActivationLink = () => {
-        UserService.resend(email, false, type === Env.RECORD_TYPE.USER ? 'frontend' : 'backend')
+        UserService.resend(email, false, type === Env.RECORD_TYPE.USER ? 'frontend' : 'backoffice')
             .then(status => {
                 if (status === 200) {
                     Helper.info(commonStrings.ACTIVATION_EMAIL_SENT)

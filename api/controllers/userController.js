@@ -25,7 +25,7 @@ const SMTP_PASS = process.env.BC_SMTP_PASS
 const SMTP_FROM = process.env.BC_SMTP_FROM
 const CDN = process.env.BC_CDN_USERS
 const CDN_TEMP = process.env.BC_CDN_TEMP_USERS
-const BACKEND_HOST = process.env.BC_BACKEND_HOST
+const BACKOFFICE_HOST = process.env.BC_BACKOFFICE_HOST
 const FRONTEND_HOST = process.env.BC_FRONTEND_HOST
 
 const getStatusMessage = (lang, msg) => {
@@ -265,7 +265,7 @@ export const create = async (req, res) => {
                         html: '<p>' + strings.HELLO + user.fullName + ',<br><br>'
                             + strings.ACCOUNT_ACTIVATION_LINK + '<br><br>'
 
-                            + Helper.joinURL(user.type === Env.USER_TYPE.USER ? FRONTEND_HOST : BACKEND_HOST, 'activate')
+                            + Helper.joinURL(user.type === Env.USER_TYPE.USER ? FRONTEND_HOST : BACKOFFICE_HOST, 'activate')
                             + '/?u=' + encodeURIComponent(user._id)
                             + '&e=' + encodeURIComponent(user.email)
                             + '&t=' + encodeURIComponent(token.token)
@@ -298,8 +298,8 @@ export const checkToken = (req, res) => {
     User.findOne({ _id: new mongoose.Types.ObjectId(req.params.userId), email: req.params.email })
         .then(user => {
             if (user) {
-                if (![Env.APP_TYPE.FRONTEND, Env.APP_TYPE.BACKEND].includes(req.params.type)
-                    || (req.params.type === Env.APP_TYPE.BACKEND && user.type === Env.USER_TYPE.USER)
+                if (![Env.APP_TYPE.FRONTEND, Env.APP_TYPE.BACKOFFICE].includes(req.params.type)
+                    || (req.params.type === Env.APP_TYPE.BACKOFFICE && user.type === Env.USER_TYPE.USER)
                     || (req.params.type === Env.APP_TYPE.FRONTEND && user.type !== Env.USER_TYPE.USER)
                     || user.active
                 ) {
@@ -347,8 +347,8 @@ export const resend = (req, res) => {
     User.findOne({ email: req.params.email })
         .then(user => {
             if (user) {
-                if (![Env.APP_TYPE.FRONTEND, Env.APP_TYPE.BACKEND].includes(req.params.type)
-                    || (req.params.type === Env.APP_TYPE.BACKEND && user.type === Env.USER_TYPE.USER)
+                if (![Env.APP_TYPE.FRONTEND, Env.APP_TYPE.BACKOFFICE].includes(req.params.type)
+                    || (req.params.type === Env.APP_TYPE.BACKOFFICE && user.type === Env.USER_TYPE.USER)
                     || (req.params.type === Env.APP_TYPE.FRONTEND && user.type !== Env.USER_TYPE.USER)
                 ) {
                     return res.sendStatus(403)
@@ -382,7 +382,7 @@ export const resend = (req, res) => {
                                         html: '<p>' + strings.HELLO + user.fullName + ',<br><br>'
                                             + (reset ? strings.PASSWORD_RESET_LINK : strings.ACCOUNT_ACTIVATION_LINK) + '<br><br>'
 
-                                            + Helper.joinURL(user.type === Env.USER_TYPE.USER ? FRONTEND_HOST : BACKEND_HOST, (reset ? 'reset-password' : 'activate'))
+                                            + Helper.joinURL(user.type === Env.USER_TYPE.USER ? FRONTEND_HOST : BACKOFFICE_HOST, (reset ? 'reset-password' : 'activate'))
                                             + '/?u=' + encodeURIComponent(user._id)
                                             + '&e=' + encodeURIComponent(user.email)
                                             + '&t=' + encodeURIComponent(token.token)
@@ -464,8 +464,8 @@ export const signin = (req, res) => {
             if (!req.body.password
                 || !user
                 || !user.password
-                || (![Env.APP_TYPE.FRONTEND, Env.APP_TYPE.BACKEND].includes(req.params.type))
-                || (req.params.type === Env.APP_TYPE.BACKEND && user.type === Env.USER_TYPE.USER)
+                || (![Env.APP_TYPE.FRONTEND, Env.APP_TYPE.BACKOFFICE].includes(req.params.type))
+                || (req.params.type === Env.APP_TYPE.BACKOFFICE && user.type === Env.USER_TYPE.USER)
                 || (req.params.type === Env.APP_TYPE.FRONTEND && user.type !== Env.USER_TYPE.USER)
             ) {
                 res.sendStatus(204)
