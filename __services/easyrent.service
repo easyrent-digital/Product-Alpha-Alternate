@@ -1,0 +1,15 @@
+[Unit]
+Description=EasyRent API
+Wants=mongod.service
+After=mongod.service
+
+[Service]
+ExecStart=/usr/bin/node -r dotenv/config app.js
+WorkingDirectory=/opt/easyrent/api
+Type=simple
+Restart=always
+StandardOutput=append:/var/log/easyrent.log
+StandardError=append:/var/log/easyrent.log
+
+[Install]
+WantedBy=multi-user.target
