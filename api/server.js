@@ -30,6 +30,7 @@ const DB_USERNAME = process.env.BC_DB_USERNAME
 const DB_APP_NAME = process.env.BC_DB_APP_NAME
 const DB_NAME = process.env.BC_DB_NAME
 
+// -------- DATABASE CONNECTION:
 const fs = require('fs');
 let DB_PASSWORD;
 try {
@@ -63,26 +64,21 @@ mongoose.connect(DB_URI, options)
         err => { console.error('Cannot connect to the database:', err) }
     )
 
+// -------- LOGGING:
 // setup morgan for logging
 app.use(morgan('combined'))
 
-// Define rate limiter
+// -------- RATE LIMITING:
+//      Define rate limiter
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100 // limit each IP to 100 requests per windowMs
   })
 
-// --- TODO: Limit the CORS settings -- when ready: app.use(cors(corsOptions))
-const corsOptions = {
-    origin: 'http://example.com', // or a list of allowed origins
-    methods: ['GET', 'POST'], // allowed methods
-    allowedHeaders: ['Content-Type', 'Authorization'] // allowed headers
-  }
-
-// Initialize an express app
 const app = express()
 app.use(limiter)
 
+// -------- HTTP HEADER HARDENING
 // Apply Helmet middleware for securing Express apps with various HTTP headers
 app.use(helmet.contentSecurityPolicy())
 app.use(helmet.dnsPrefetchControl())
@@ -98,17 +94,32 @@ app.use(helmet.xssFilter())
 app.use(helmet.originAgentCluster())
 app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }))
 app.use(helmet.crossOriginOpenerPolicy())
+
+// -------- CACHE POLICY
 // Apply no-cache middleware to disable client-side caching
 app.use(nocache())
+
+// -------- RESPONSE BODY COMPRESSION:
 // Apply compression middleware to compress response bodies for all request that traverse through the middleware
 app.use(compression({ threshold: 0 }))
+
+// -------- PARSING METHODS
 // Built-in middleware function in Express to parse incoming requests with urlencoded payloads
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
 // Built-in middleware function in Express to parse incoming requests with JSON payloads
 app.use(express.json({ limit: '50mb' }))
-// Apply CORS middleware to allow cross-origin requests ( --- TODO: NEEDS HARDENING)
+
+// -------- ENABLE CROSS-ORIGIN REQUESTS (* UNFINISHED *)
+// Apply CORS middleware to allow cross-origin requests.
+// - * - * TODO: Limit the CORS settings -- when ready: app.use(cors(corsOptions))
+const corsOptions = {
+    origin: 'http://example.com', // or a list of allowed origins
+    methods: ['GET', 'POST'], // allowed methods
+    allowedHeaders: ['Content-Type', 'Authorization'] // allowed headers
+  }
 app.use(cors())
 
+// -------- ROUTES
 // Define the base routes for each feature of the app
 app.use('/', userRoutes)
 app.use('/', companyRoutes)
@@ -117,9 +128,11 @@ app.use('/', carRoutes)
 app.use('/', bookingRoutes)
 app.use('/', notificationRoutes)
 
+// -------- LANGUAGE
 // Set the default language using the environment variable BC_DEFAULT_LANGUAGE
 strings.setLanguage(process.env.BC_DEFAULT_LANGUAGE)
 
+// -------- ERROR HANDLING
 // global error handler
 app.use(function (err, req, res, next) {
     console.error(err.stack)

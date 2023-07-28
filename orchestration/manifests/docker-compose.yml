@@ -5,13 +5,17 @@
 # 1- FOR MONGO ROOT PASSWORD:
 #   echo "<password for mongo>" | docker secret create mongo_root_password -
 
-# 2- FOR 
+# 2- FOR TLS KEYS & CERTS [api service]: 
+#   add valid certs to the __certs folder
+
 
 version: '3.8'
 
 services:
   nginx:
     image: nginx:latest
+    depends_on:
+      - mongodb
     volumes:
       - ./cdn:/usr/share/nginx/html/cdn
     ports:
@@ -39,12 +43,13 @@ services:
       update_config:
         parallelism: 2
         delay: 10s
+    depends_on:
+      - mongodb
     networks:
       - app_network
     ports:
+      # Map localhost machine port 3000 to app port 4000
       - 3000:4000
-    depends_on:
-      - mongodb
     volumes:
       - ../__certs:/etc/ssl
     environment:
@@ -94,12 +99,15 @@ services:
       update_config:
         parallelism: 2
         delay: 10s
+    depends_on:
+      - mongodb
     networks:
       - app_network
     ports:
+        # Map localhost machine port 3001 to app port 4000
       - 3001:80
     environment:
-      PORT: 3000 #edited from 3001
+      PORT: 80 #edited from 3001
       REACT_APP_NODE_ENV: development
       REACT_APP_BC_API_HOST: http://api:3000
       REACT_APP_BC_RECAPTCHA_SITE_KEY: GOOGLE_RECAPTCHA_SITE_KEY # INPUT
@@ -125,9 +133,12 @@ services:
       update_config:
         parallelism: 2
         delay: 10s
+    depends_on:
+      - mongodb
     networks:
       - app_network
     ports:
+      # Map localhost machine port 3002 to app port 80
       - 3002:80
     environment:
       PORT: 80 #edited from 3000
