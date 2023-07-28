@@ -13,6 +13,8 @@ import BookingStatus from './BookingStatus'
 import Button from './Button'
 
 const BookingList = (props) => {
+    const [firstLoad, setFirstLoad] = useState(true)
+    const [onScrollEnd, setOnScrollEnd] = useState(false)
     const [loading, setLoading] = useState(true)
     const [fetch, setFetch] = useState(false)
     const [page, setPage] = useState(0)
@@ -58,17 +60,28 @@ const BookingList = (props) => {
         if (page > 0) {
             _fetch()
         }
-    }, [page])
+    }, [page]) // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
-        if (props.companies) {
-            if (page > 0) {
-                _fetch(true)
-            } else {
-                _fetch()
+        (async function () {
+            if (firstLoad && props.companies && props.companies.length > 0 && props.statuses && props.statuses.length > 0) {
+                await _fetch()
+                setFirstLoad(false)
+            }
+        })()
+    }, [firstLoad, props.companies, props.statuses]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        if (!firstLoad) {
+            if (props.companies && props.statuses) {
+                if (page > 0) {
+                    _fetch(true)
+                } else {
+                    _fetch()
+                }
             }
         }
-    }, [props.companies, props.statuses, props.filter])
+    }, [props.companies, props.statuses, props.filter]) // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         async function init() {
@@ -103,7 +116,7 @@ const BookingList = (props) => {
                 contentContainerStyle={styles.contentContainer}
                 style={styles.flatList}
                 data={rows}
-                renderItem={({ item: booking, index }) => {
+                renderItem={({ item: booking }) => {
                     const from = new Date(booking.from)
                     const to = new Date(booking.to)
                     const days = Helper.days(from, to)
@@ -240,7 +253,7 @@ const BookingList = (props) => {
                                             {
                                                 !cancelRequestProcessing &&
                                                 <NativeButton
-                                                    color='#f37022'
+                                                    // color='#f37022'
                                                     onPress={() => {
                                                         setOpenCancelDialog(false)
                                                         if (cancelRequestSent) {
@@ -256,7 +269,7 @@ const BookingList = (props) => {
                                             {
                                                 !cancelRequestSent && !cancelRequestProcessing &&
                                                 <NativeButton
-                                                    color='#f37022'
+                                                    // color='#f37022'
                                                     onPress={async () => {
                                                         try {
                                                             setCancelRequestProcessing(true)
@@ -292,11 +305,13 @@ const BookingList = (props) => {
                         </View>
                     )
                 }}
-                keyExtractor={(item, index) => item._id}
-                onEndReached={() => {
-                    if (fetch && props.companies) {
+                keyExtractor={(item) => item._id}
+                onEndReached={() => setOnScrollEnd(true)}
+                onMomentumScrollEnd={() => {
+                    if (onScrollEnd && fetch && props.companies) {
                         setPage(page + 1)
                     }
+                    setOnScrollEnd(false)
                 }}
                 ListHeaderComponent={props.header}
                 ListFooterComponent={fetch && !openCancelDialog && <ActivityIndicator size='large' color='#f37022' style={styles.indicator} />}

@@ -51,7 +51,7 @@ const Avatar = (props) => {
                                         props.onChange(user)
                                     }
                                 }
-                            }).catch(err => {
+                            }).catch((err) => {
                                 Helper.error(err)
                                 if (props.onChange) {
                                     props.onChange(user)
@@ -64,7 +64,7 @@ const Avatar = (props) => {
                         }
                     }
                 }
-            ).catch(err => {
+            ).catch((err) => {
                 Helper.error(err)
                 if (props.onChange) {
                     props.onChange(user)
@@ -96,11 +96,11 @@ const Avatar = (props) => {
         setOpen(false)
     }
 
-    const handleCancelDelete = (e) => {
+    const handleCancelDelete = () => {
         closeDialog()
     }
 
-    const handleDelete = (e) => {
+    const handleDelete = () => {
         const { _id } = user
         UserService.deleteAvatar(_id)
             .then(status => {
@@ -116,13 +116,13 @@ const Avatar = (props) => {
                             } else {
                                 Helper.error()
                             }
-                        }).catch(err => {
+                        }).catch((err) => {
                             Helper.error(err)
                         })
                 } else {
                     Helper.error()
                 }
-            }).catch(err => {
+            }).catch((err) => {
                 Helper.error(err)
             })
     }

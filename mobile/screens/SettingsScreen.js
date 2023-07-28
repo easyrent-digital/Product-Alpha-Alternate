@@ -90,9 +90,9 @@ const SettingsScreen = ({ navigation, route }) => {
         } else {
             setVisible(false)
         }
-    }, [route.params, isFocused])
+    }, [route.params, isFocused]) // eslint-disable-line react-hooks/exhaustive-deps
 
-    const onLoad = (user) => {
+    const onLoad = () => {
         setReload(false)
     }
 
@@ -201,8 +201,8 @@ const SettingsScreen = ({ navigation, route }) => {
                     Helper.error()
                 }
             })
-            .catch(() => {
-                UserService.signout(navigation, false, true)
+            .catch((err) => {
+                Helper.error(err)
             })
 
     }
@@ -257,11 +257,11 @@ const SettingsScreen = ({ navigation, route }) => {
 
                                                 let pickerResult = await ImagePicker.launchImageLibraryAsync()
 
-                                                if (pickerResult.cancelled === true) {
+                                                if (pickerResult.canceled === true) {
                                                     return
                                                 }
 
-                                                const uri = pickerResult.uri
+                                                const uri = pickerResult.assets[0].uri
                                                 const name = Helper.getFileName(uri)
                                                 const type = Helper.getMimeType(name)
                                                 const image = { uri, name, type }
@@ -270,13 +270,14 @@ const SettingsScreen = ({ navigation, route }) => {
                                                 if (status == 200) {
                                                     const _user = await UserService.getUser(user._id)
                                                     setUser(_user)
-                                                    setAvatar(Helper.joinURL(Env.CDN_USERS, _user.avatar))
+                                                    const _avatar = Helper.joinURL(Env.CDN_USERS, _user.avatar)
+                                                    setAvatar(_avatar)
                                                 } else {
                                                     Helper.error()
                                                 }
                                             }
                                             catch (err) {
-                                                await UserService.signout(navigation)
+                                                Helper.error(err)
                                             }
 
                                         }}>
@@ -369,7 +370,7 @@ const SettingsScreen = ({ navigation, route }) => {
                             </Dialog.Content>
                             <Dialog.Actions style={styles.dialogActions}>
                                 <NativeButton
-                                    color='#f37022'
+                                    // color='#f37022'
                                     onPress={() => {
                                         setOpenDeleteDialog(false)
                                     }}
@@ -377,7 +378,7 @@ const SettingsScreen = ({ navigation, route }) => {
                                     {i18n.t('CANCEL')}
                                 </NativeButton>
                                 <NativeButton
-                                    color='#f37022'
+                                    // color='#f37022'
                                     onPress={async () => {
                                         try {
                                             const status = await UserService.deleteAvatar(user._id)
@@ -390,7 +391,7 @@ const SettingsScreen = ({ navigation, route }) => {
                                             }
                                         }
                                         catch (err) {
-                                            await UserService.signout(navigation)
+                                            Helper.error(err)
                                         }
                                     }}
                                 >

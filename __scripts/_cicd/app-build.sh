@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-services = ("api" "backoffice" "frontend")
+services = ("api" "backend" "frontend")
 if [ "$1" == "all" ]; then
-  services = ("api" "backoffice" "frontend")
-elif [ "$1" == "api" || "$1" == "backoffice" || "$1" == "frontend" ]; then
+  services = ("api" "backend" "frontend")
+elif [ "$1" == "api" || "$1" == "backend" || "$1" == "frontend" ]; then
   services = "$1"
 else
   services = ""

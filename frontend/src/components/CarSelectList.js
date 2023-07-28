@@ -13,7 +13,7 @@ import {
     DialogActions,
     Button
 } from '@mui/material'
-import * as UserService from '../services/UserService'
+import * as Helper from '../common/Helper'
 
 const CarSelectList = ({ label, readOnly, required, multiple, variant, value, company, pickupLocation, onChange }) => {
     const [init, setInit] = useState(false)
@@ -77,7 +77,7 @@ const CarSelectList = ({ label, readOnly, required, multiple, variant, value, co
         }
     }, [_pickupLocation, pickupLocation])
 
-    const handleChange = (values, key, reference) => {
+    const handleChange = (values) => {
         if (onChange) {
             onChange(values)
         }
@@ -113,8 +113,8 @@ const CarSelectList = ({ label, readOnly, required, multiple, variant, value, co
                 setInit(true)
                 setLoading(false)
             })
-            .catch(() => {
-                UserService.signout()
+            .catch((err) => {
+                Helper.error(err)
             })
     }
 
@@ -147,7 +147,7 @@ const CarSelectList = ({ label, readOnly, required, multiple, variant, value, co
                     }
                 }}
                 onOpen={
-                    (event) => {
+                    () => {
                         if (!init || reload) {
                             const p = 1
                             setCars([])
@@ -169,7 +169,7 @@ const CarSelectList = ({ label, readOnly, required, multiple, variant, value, co
                     }
                 }
                 onClear={
-                    (event) => {
+                    () => {
                         setCars([])
                         setPage(1)
                         setKeyword('')

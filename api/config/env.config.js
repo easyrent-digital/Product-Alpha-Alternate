@@ -1,12 +1,12 @@
 const Env = {
-    DEFAULT_LANGUAGE: 'fr',
+    DEFAULT_LANGUAGE: 'en',
     USER_TYPE: {
         ADMIN: 'admin',
         COMPANY: 'company',
         USER: 'user'
     },
     APP_TYPE: {
-        BACKOFFICE: 'backoffice',
+        backend: 'backend',
         FRONTEND: 'frontend'
     },
     CAR_TYPE: {

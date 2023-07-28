@@ -32,9 +32,9 @@ sudo podman build \
     -t easyrentdigital/product-alpha-alternate/frontend:0.1.0 \
     .
 
-cd ../backoffice
+cd ../backend
 sudo podman build \
-    -t easyrentdigital/product-alpha-alternate/backoffice:0.1.0 \
+    -t easyrentdigital/product-alpha-alternate/backend:0.1.0 \
     .
 
 
@@ -43,11 +43,11 @@ sudo podman push easyrentdigital/product-alpha-alternate/api:0.1.0
 
 sudo podman push easyrentdigital/product-alpha-alternate/frontend:0.1.0
 
-sudo podman push easyrentdigital/product-alpha-alternate/backoffice:0.1.0
+sudo podman push easyrentdigital/product-alpha-alternate/backend:0.1.0
 
 podman run -p 3000:4000 -d api-service
 podman run -p 3001:80 -d frontend-service
-podman run -p 3002:80 -d backoffice-service
+podman run -p 3002:80 -d backend-service
 
 
 

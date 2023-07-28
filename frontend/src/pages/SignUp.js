@@ -21,10 +21,12 @@ import {
 import validator from 'validator'
 import { intervalToDuration } from 'date-fns'
 import * as Helper from '../common/Helper'
+import { useNavigate } from 'react-router-dom'
 
 import '../assets/css/signup.css'
 
 const SignUp = () => {
+    const navigate = useNavigate()
     const [language, setLanguage] = useState(Env.DEFAULT_LANGUAGE)
     const [fullName, setFullName] = useState('')
     const [email, setEmail] = useState('')
@@ -192,7 +194,7 @@ const SignUp = () => {
             return
         }
 
-        if (!reCaptchaToken) {
+        if (Env.RECAPTCHA_ENABLED && !reCaptchaToken) {
             setPasswordError(false)
             setRecaptchaError(true)
             setPasswordsDontMatch(false)
@@ -227,7 +229,7 @@ const SignUp = () => {
                     UserService.signin({ email: email, password: password })
                         .then(signInResult => {
                             if (signInResult.status === 200) {
-                                window.location.href = '/' + window.location.search
+                                navigate(`/${window.location.search}`)
                             } else {
                                 setPasswordError(false)
                                 setRecaptchaError(false)
@@ -235,7 +237,7 @@ const SignUp = () => {
                                 setError(true)
                                 setTosError(false)
                             }
-                        }).catch(err => {
+                        }).catch(() => {
                             setPasswordError(false)
                             setRecaptchaError(false)
                             setPasswordsDontMatch(false)
@@ -249,7 +251,7 @@ const SignUp = () => {
                 setError(true)
                 setTosError(false)
             })
-            .catch(err => {
+            .catch(() => {
                 setPasswordError(false)
                 setRecaptchaError(false)
                 setPasswordsDontMatch(false)
@@ -260,7 +262,7 @@ const SignUp = () => {
 
     const onLoad = (user) => {
         if (user) {
-            window.location.href = '/'
+            navigate('/')
         } else {
             setLanguage(UserService.getLanguage())
             setVisible(true)
@@ -370,13 +372,18 @@ const SignUp = () => {
                                         }}
                                     />
                                 </FormControl>
-                                <div className="recaptcha">
-                                    <ReCAPTCHA
-                                        sitekey={Env.RECAPTCHA_SITE_KEY}
-                                        hl={language}
-                                        onChange={handleOnRecaptchaVerify}
-                                    />
-                                </div>
+
+                                {
+                                    Env.RECAPTCHA_ENABLED &&
+                                    <div className="recaptcha">
+                                        <ReCAPTCHA
+                                            sitekey={Env.RECAPTCHA_SITE_KEY}
+                                            hl={language}
+                                            onChange={handleOnRecaptchaVerify}
+                                        />
+                                    </div>
+                                }
+
                                 <div className="signup-tos">
                                     <table>
                                         <tbody>

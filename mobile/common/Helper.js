@@ -7,6 +7,7 @@ import i18n from '../lang/i18n'
 import Env from '../config/env.config'
 import * as UserService from '../services/UserService'
 import * as mime from 'mime'
+import Constants from 'expo-constants'
 
 const ANDROID = Platform.OS === 'android'
 
@@ -15,7 +16,7 @@ export const android = () => (
 )
 
 export const getFileName = (path) => (
-    path.replace(/^.*[\\\/]/, '')
+    path.replace(/^.*[\\/]/, '')
 )
 
 export const getMimeType = (fileName) => (
@@ -38,7 +39,7 @@ export const registerPushToken = async (userId) => {
                     alert('Failed to get push token for push notification!')
                     return
                 }
-                token = (await Notifications.getExpoPushTokenAsync()).data
+                token = (await Notifications.getExpoPushTokenAsync({ projectId: Constants.expoConfig?.extra?.eas?.projectId })).data
             } else {
                 alert('Must use physical device for Push Notifications')
             }
@@ -105,10 +106,10 @@ export const dateTime = (date, time) => {
     return dateTime
 }
 
-export const error = (err, toast = true) => {
+export const error = (err, __toast__ = true) => {
     if (err) console.log(err)
-    if (err && err.request && err.request._response) console.log(err.request._response)
-    if (toast) toast(i18n.t('GENERIC_ERROR'))
+    if (err?.request?._response) console.log(err?.request?._response)
+    if (__toast__) toast(i18n.t('GENERIC_ERROR'))
 }
 
 export const joinURL = (part1, part2) => {

@@ -1,3 +1,4 @@
+import Const from './const'
 
 const Env = {
     isMobile: () => window.innerWidth <= 960,
@@ -5,7 +6,7 @@ const Env = {
     APP_TYPE: process.env.REACT_APP_BC_APP_TYPE || 'frontend',
     API_HOST: process.env.REACT_APP_BC_API_HOST,
     LANGUAGES: ['fr', 'en'],
-    DEFAULT_LANGUAGE: process.env.REACT_APP_BC_DEFAULT_LANGUAGE || 'fr',
+    DEFAULT_LANGUAGE: process.env.REACT_APP_BC_DEFAULT_LANGUAGE || 'en',
     PAGE_SIZE: parseInt(process.env.REACT_APP_BC_PAGE_SIZE || 30),
     CARS_PAGE_SIZE: parseInt(process.env.REACT_APP_BC_CARS_PAGE_SIZE || 15),
     BOOKINGS_PAGE_SIZE: parseInt(process.env.REACT_APP_BC_BOOKINGS_PAGE_SIZE || 20),
@@ -20,6 +21,7 @@ const Env = {
     CAR_IMAGE_HEIGHT: parseInt(process.env.REACT_APP_BC_CAR_IMAGE_HEIGHT || 200),
     CAR_OPTION_IMAGE_HEIGHT: 85,
     SELECTED_CAR_OPTION_IMAGE_HEIGHT: 30,
+    RECAPTCHA_ENABLED: (process.env.REACT_APP_BC_RECAPTCHA_ENABLED && process.env.REACT_APP_BC_RECAPTCHA_ENABLED.toLowerCase()) === 'true',
     RECAPTCHA_SITE_KEY: process.env.REACT_APP_BC_RECAPTCHA_SITE_KEY,
     RECORD_TYPE: {
         ADMIN: 'admin',
@@ -52,7 +54,14 @@ const Env = {
     MILEAGE: {
         LIMITED: 'limited',
         UNLIMITED: 'unlimited'
-    }
+    },
+    // PAGINATION_MODE: CLASSIC or INFINITE_SCROLL
+    // Defaults to CLASSIC
+    // CLASSIC or INFINITE_SCROLL are available for desktop
+    // Only INFINITE_SCROLL is available for mobile
+    // If you choose CLASSIC, you will get a classic pagination with next and previous buttons on desktop and infinite scroll on mobile.
+    // If you choose INFINITE_SCROLL, you will get infinite scroll on desktop and mobile.
+    PAGINATION_MODE: (process.env.REACT_APP_BC_PAGINATION_MODE && process.env.REACT_APP_BC_PAGINATION_MODE.toUpperCase()) === Const.PAGINATION_MODE.INFINITE_SCROLL ? Const.PAGINATION_MODE.INFINITE_SCROLL : Const.PAGINATION_MODE.CLASSIC
 }
 
 export default Env

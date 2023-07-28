@@ -6,17 +6,19 @@ import Car from '../models/Car.js'
 import escapeStringRegexp from 'escape-string-regexp'
 import mongoose from 'mongoose'
 
-export const validate = (req, res) => {
-    const language = req.body.language
-    const keyword = escapeStringRegexp(req.body.name)
-    const options = 'i'
+export const validate = async (req, res) => {
+    const { language, name } = req.body
 
-    LocationValue.findOne({ language: { $eq: language }, value: { $regex: new RegExp(`^${keyword}$`), $options: options } })
-        .then(locationValue => locationValue ? res.sendStatus(204) : res.sendStatus(200))
-        .catch(err => {
-            console.error(`[location.validate]  ${strings.DB_ERROR} ${req.body.name}`, err)
-            res.status(400).send(strings.DB_ERROR + err)
-        })
+    try {
+        const keyword = escapeStringRegexp(name)
+        const options = 'i'
+
+        const locationValue = await LocationValue.findOne({ language: { $eq: language }, value: { $regex: new RegExp(`^${keyword}$`), $options: options } })
+        return locationValue ? res.sendStatus(204) : res.sendStatus(200)
+    } catch (err) {
+        console.error(`[location.validate]  ${strings.DB_ERROR} ${name}`, err)
+        return res.status(400).send(strings.DB_ERROR + err)
+    }
 }
 
 export const create = async (req, res) => {
@@ -38,81 +40,79 @@ export const create = async (req, res) => {
         await location.save()
         return res.sendStatus(200)
     } catch (err) {
-        console.error(`[location.create]  ${strings.DB_ERROR} ${req.body}`, err)
-        res.status(400).send(strings.DB_ERROR + err)
+        console.error(`[location.create] ${strings.DB_ERROR} ${req.body}`, err)
+        return res.status(400).send(strings.DB_ERROR + err)
     }
 }
 
-export const update = (req, res) => {
-    Location.findById(req.params.id)
-        .populate('values')
-        .then(async location => {
-            if (location) {
-                const names = req.body
-                for (let i = 0; i < names.length; i++) {
-                    const name = names[i]
-                    const locationValue = location.values.filter(value => value.language === name.language)[0]
-                    if (locationValue) {
-                        locationValue.value = name.name
-                        await locationValue.save()
-                    } else {
-                        const locationValue = new LocationValue({
-                            language: name.language,
-                            value: name.name
-                        })
-                        await locationValue.save()
-                        location.values.push(locationValue._id)
-                        await location.save()
-                    }
+export const update = async (req, res) => {
+    const { id } = req.params
+
+    try {
+        const location = await Location.findById(id).populate('values')
+
+        if (location) {
+            const names = req.body
+            for (let i = 0; i < names.length; i++) {
+                const name = names[i]
+                const locationValue = location.values.filter(value => value.language === name.language)[0]
+                if (locationValue) {
+                    locationValue.value = name.name
+                    await locationValue.save()
+                } else {
+                    const locationValue = new LocationValue({
+                        language: name.language,
+                        value: name.name
+                    })
+                    await locationValue.save()
+                    location.values.push(locationValue._id)
+                    await location.save()
                 }
-                return res.sendStatus(200)
-            } else {
-                console.error('[location.update] Location not found:', req.body)
-                res.sendStatus(204)
             }
-        })
-        .catch(err => {
-            console.error(`[location.update]  ${strings.DB_ERROR} ${req.body}`, err)
-            res.status(400).send(strings.DB_ERROR + err)
-        })
+            return res.sendStatus(200)
+        } else {
+            console.error('[location.update] Location not found:', id)
+            return res.sendStatus(204)
+        }
+
+    } catch (err) {
+        console.error(`[location.update] ${strings.DB_ERROR} ${req.body}`, err)
+        return res.status(400).send(strings.DB_ERROR + err)
+    }
 }
 
-export const deleteLocation = (req, res) => {
-    const id = req.params.id
+export const deleteLocation = async (req, res) => {
+    const { id } = req.params
 
-    Location.findByIdAndDelete(id, async (err, location) => {
-        if (err) {
-            console.error(`[location.delete]  ${strings.DB_ERROR} ${req.params.id}`, err)
-            res.status(400).send(strings.DB_ERROR + err)
-        } else {
-            try {
-                await LocationValue.deleteMany({ _id: { $in: location.values } })
-                res.sendStatus(200)
-            } catch (err) {
-                console.error(`[location.delete]  ${strings.DB_ERROR} ${req.params.id}`, err)
-                res.status(400).send(strings.DB_ERROR + err)
-            }
-        }
-    })
+    try {
+        const location = await Location.findByIdAndDelete(id)
+        await LocationValue.deleteMany({ _id: { $in: location.values } })
+        return res.sendStatus(200)
+    } catch (err) {
+        console.error(`[location.delete] ${strings.DB_ERROR} ${id}`, err)
+        return res.status(400).send(strings.DB_ERROR + err)
+    }
 }
 
 export const getLocation = async (req, res) => {
-    Location.findById(req.params.id)
-        .populate('values')
-        .lean()
-        .then(location => {
-            if (location) {
-                location.name = location.values.filter(value => value.language === req.params.language)[0].value
-                res.json(location)
-            } else {
-                console.error('[location.getLocation] Location not found:', req.params.id)
-                res.sendStatus(204)
-            }
-        })
-        .catch(err => {
-            console.error(`[location.getLocation]  ${strings.DB_ERROR} ${req.params.id}`, err)
-            res.status(400).send(strings.DB_ERROR + err)
-        })
+    const { id } = req.params
+
+    try {
+        const location = await Location.findById(id)
+            .populate('values')
+            .lean()
+
+        if (location) {
+            location.name = location.values.filter(value => value.language === req.params.language)[0].value
+            return res.json(location)
+        } else {
+            console.error('[location.getLocation] Location not found:', id)
+            return res.sendStatus(204)
+        }
+    } catch (err) {
+        console.error(`[location.delete] ${strings.DB_ERROR} ${id}`, err)
+        return res.status(400).send(strings.DB_ERROR + err)
+    }
 }
 
 export const getLocations = async (req, res) => {
@@ -160,27 +160,30 @@ export const getLocations = async (req, res) => {
             }
         ], { collation: { locale: Env.DEFAULT_LANGUAGE, strength: 2 } })
 
-        res.json(locations)
+        return res.json(locations)
     } catch (err) {
-        console.error(`[location.getLocations]  ${strings.DB_ERROR} ${req.query.s}`, err)
-        res.status(400).send(strings.DB_ERROR + err)
+        console.error(`[location.getLocations] ${strings.DB_ERROR} ${req.query.s}`, err)
+        return res.status(400).send(strings.DB_ERROR + err)
     }
 }
 
-export const checkLocation = (req, res) => {
-    const id = new mongoose.Types.ObjectId(req.params.id)
+export const checkLocation = async (req, res) => {
+    const { id } = req.params
 
-    Car.find({ locations: id })
-        .limit(1)
-        .count()
-        .then(count => {
-            if (count === 1) {
-                return res.sendStatus(200)
-            }
-            return res.sendStatus(204)
-        })
-        .catch(err => {
-            console.error(`[location.checkLocation]  ${strings.DB_ERROR} ${id}`, err)
-            res.status(400).send(strings.DB_ERROR + err)
-        })
+    try {
+        const _id = new mongoose.Types.ObjectId(id)
+
+        const count = await Car.find({ locations: _id })
+            .limit(1)
+            .count()
+
+        if (count === 1) {
+            return res.sendStatus(200)
+        }
+        
+        return res.sendStatus(204)
+    } catch (err) {
+        console.error(`[location.checkLocation] ${strings.DB_ERROR} ${id}`, err)
+        return res.status(400).send(strings.DB_ERROR + err)
+    }
 }

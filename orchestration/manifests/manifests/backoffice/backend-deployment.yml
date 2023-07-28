@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backoffice-deployment
+  name: backend-deployment
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: backoffice
+      app: backend
   template:
     metadata:
       labels:
-        app: backoffice
+        app: backend
     spec:
       containers:
-      - name: backoffice-container
-        image: backoffice:latest
+      - name: backend-container
+        image: backend:latest
         ports:
         - containerPort: 3000

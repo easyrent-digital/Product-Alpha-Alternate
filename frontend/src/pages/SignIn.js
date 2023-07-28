@@ -13,10 +13,12 @@ import {
     Button,
     Link
 } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
 
 import '../assets/css/signin.css'
 
 const SignIn = () => {
+    const navigate = useNavigate()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState(false)
@@ -57,12 +59,12 @@ const SignIn = () => {
                         if (params.has('from')) {
                             const from = params.get('from')
                             if (from === 'create-booking') {
-                                window.location.href = '/create-booking' + window.location.search
+                                navigate(`/create-booking${window.location.search}`)
                             } else {
-                                window.location.href = '/'
+                                navigate('/')
                             }
                         } else {
-                            window.location.href = '/'
+                            navigate('/')
                         }
                     }
                 } else {
@@ -88,35 +90,39 @@ const SignIn = () => {
         const currentUser = UserService.getCurrentUser()
 
         if (currentUser) {
-            UserService.validateAccessToken().then(status => {
-                if (status === 200) {
-                    UserService.getUser(currentUser.id).then(user => {
-                        if (user) {
-                            const params = new URLSearchParams(window.location.search)
-                            if (params.has('from')) {
-                                const from = params.get('from')
-                                if (from === 'create-booking') {
-                                    window.location.href = '/create-booking' + window.location.search
+            UserService.validateAccessToken()
+                .then(status => {
+                    if (status === 200) {
+                        UserService.getUser(currentUser.id)
+                            .then(user => {
+                                if (user) {
+                                    const params = new URLSearchParams(window.location.search)
+                                    if (params.has('from')) {
+                                        const from = params.get('from')
+                                        if (from === 'create-booking') {
+                                            navigate(`/create-booking${window.location.search}`)
+                                        } else {
+                                            navigate(`/${window.location.search}`)
+                                        }
+                                    } else {
+                                        navigate(`/${window.location.search}`)
+                                    }
                                 } else {
-                                    window.location.href = '/' + window.location.search
+                                    UserService.signout()
                                 }
-                            } else {
-                                window.location.href = '/' + window.location.search
-                            }
-                        } else {
-                            UserService.signout()
-                        }
-                    }).catch(err => {
-                        UserService.signout()
-                    })
-                }
-            }).catch(err => {
-                UserService.signout()
-            })
+                            })
+                            .catch(() => {
+                                UserService.signout()
+                            })
+                    }
+                })
+                .catch(() => {
+                    UserService.signout()
+                })
         } else {
             setVisible(true)
         }
-    }, [])
+    }, [navigate])
 
     return (
         <div>

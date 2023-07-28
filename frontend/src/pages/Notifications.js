@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { strings as commonStrings } from '../lang/common'
 import { strings } from '../lang/notifications'
 import Master from '../components/Master'
-import * as UserService from '../services/UserService'
 import * as NotificationService from '../services/NotificationService'
 import { Button, Card, CardContent, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip, Typography } from '@mui/material'
 import {
@@ -18,10 +17,12 @@ import Env from '../config/env.config'
 import Backdrop from '../components/SimpleBackdrop'
 import { format } from 'date-fns'
 import { fr, enUS } from "date-fns/locale"
+import { useNavigate } from 'react-router-dom'
 
 import '../assets/css/notifications.css'
 
 const Notifications = () => {
+    const navigate = useNavigate()
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const [page, setPage] = useState(1)
@@ -52,7 +53,7 @@ const Notifications = () => {
                 setLoading(false)
             }
             catch (err) {
-                UserService.signout()
+                Helper.error(err)
             }
         }
     }, [user, page])
@@ -141,7 +142,7 @@ const Notifications = () => {
                                                         }
                                                     }
                                                     catch (err) {
-                                                        UserService.signout()
+                                                        Helper.error(err)
                                                     }
                                                 }}>
                                                     <MarkReadIcon />
@@ -168,7 +169,7 @@ const Notifications = () => {
                                                         }
                                                     }
                                                     catch (err) {
-                                                        UserService.signout()
+                                                        Helper.error(err)
                                                     }
                                                 }}>
                                                     <MarkUnreadIcon />
@@ -189,7 +190,7 @@ const Notifications = () => {
                         </div>
                         <div ref={notificationsListRef} className='notifications-list'>
                             {
-                                rows.map((row, index) => (
+                                rows.map((row) => (
                                     <div key={row._id} className='notification-container'>
                                         <div className='notification-checkbox'>
                                             <Checkbox checked={row.checked} onChange={(event) => {
@@ -211,8 +212,8 @@ const Notifications = () => {
                                                         <Tooltip title={strings.VIEW}>
                                                             <IconButton onClick={async () => {
                                                                 try {
-                                                                    const navigate = () => {
-                                                                        window.location.href = `/booking?b=${row.booking}`
+                                                                    const __navigate__ = () => {
+                                                                        navigate( `/booking?b=${row.booking}`)
                                                                     }
 
                                                                     if (!row.isRead) {
@@ -222,16 +223,16 @@ const Notifications = () => {
                                                                             row.isRead = true
                                                                             setRows(Helper.clone(rows))
                                                                             setNotificationCount(notificationCount - 1)
-                                                                            navigate()
+                                                                            __navigate__()
                                                                         } else {
                                                                             Helper.error()
                                                                         }
                                                                     } else {
-                                                                        navigate()
+                                                                        __navigate__()
                                                                     }
                                                                 }
                                                                 catch (err) {
-                                                                    UserService.signout()
+                                                                    Helper.error(err)
                                                                 }
                                                             }}>
                                                                 <ViewIcon />
@@ -254,7 +255,7 @@ const Notifications = () => {
                                                                         }
                                                                     }
                                                                     catch (err) {
-                                                                        UserService.signout()
+                                                                        Helper.error(err)
                                                                     }
                                                                 }}>
                                                                     <MarkReadIcon />
@@ -275,7 +276,7 @@ const Notifications = () => {
                                                                         }
                                                                     }
                                                                     catch (err) {
-                                                                        UserService.signout()
+                                                                        Helper.error(err)
                                                                     }
                                                                 }}>
                                                                     <MarkUnreadIcon />
@@ -373,7 +374,7 @@ const Notifications = () => {
                                         }
                                     }
                                     catch (err) {
-                                        UserService.signout()
+                                        Helper.error(err)
                                     }
                                 }} variant='contained' color='error'>{commonStrings.DELETE}</Button>
                             </DialogActions>

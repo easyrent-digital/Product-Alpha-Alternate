@@ -2,7 +2,7 @@ import Env from '../config/env.config.js'
 import strings from '../config/app.config.js'
 import Car from '../models/Car.js'
 import Booking from '../models/Booking.js'
-import fs from 'fs'
+import fs from 'fs/promises'
 import path from 'path'
 import { v1 as uuid } from 'uuid'
 import escapeStringRegexp from 'escape-string-regexp'
@@ -12,158 +12,132 @@ import * as Helper from '../common/Helper.js'
 const CDN = process.env.BC_CDN_CARS
 const CDN_TEMP = process.env.BC_CDN_TEMP_CARS
 
-export const create = (req, res) => {
+export const create = async (req, res) => {
     const { body } = req
 
-    if (!body.image) {
-        console.error(`[car.create]  ${strings.CAR_IMAGE_REQUIRED} ${req.body}`)
-        res.status(400).send(strings.CAR_IMAGE_REQUIRED + err)
-        return
-    }
+    try {
+        if (!body.image) {
+            console.error(`[car.create] ${strings.CAR_IMAGE_REQUIRED} ${body}`)
+            return res.status(400).send(strings.CAR_IMAGE_REQUIRED)
+        }
 
-    const car = new Car(req.body)
+        const car = new Car(body)
+        await car.save()
 
-    car.save()
-        .then(async car => {
+        if (car.image) {
+            const image = path.join(CDN_TEMP, body.image)
 
-            if (car.image) {
-                const image = path.join(CDN_TEMP, body.image)
+            if (await Helper.exists(image)) {
+                const filename = `${car._id}_${Date.now()}${path.extname(body.image)}`
+                const newPath = path.join(CDN, filename)
 
-                if (await Helper.fileExists(image)) {
-                    const filename = `${car._id}_${Date.now()}${path.extname(body.image)}`
-                    const newPath = path.join(CDN, filename)
-
-                    try {
-                        await fs.promises.rename(image, newPath)
-                        car.image = filename
-                        try {
-                            await car.save()
-                        } catch (err) {
-                            console.error(strings.DB_ERROR, err)
-                            res.status(400).send(strings.DB_ERROR + err)
-                        }
-                    } catch (err) {
-                        console.error(strings.ERROR, err)
-                        res.status(400).send(strings.ERROR + err)
-                    }
-                } else {
-                    console.error(strings.CAR_IMAGE_NOT_FOUND, body)
-
-                    try {
-                        await Car.deleteOne({ _id: car._id })
-                    } catch (err) {
-                        console.error(strings.DB_ERROR, err)
-                        res.status(400).send(strings.DB_ERROR + err)
-                    }
-                    finally {
-                        res.status(400).send(strings.CAR_IMAGE_NOT_FOUND + body)
-                    }
-
-                    return
-                }
-            }
-
-            res.json(car)
-        })
-        .catch(err => {
-            console.error(`[car.create]  ${strings.DB_ERROR} ${req.body}`, err)
-            res.status(400).send(strings.DB_ERROR + err)
-        })
-}
-
-export const update = (req, res) => {
-    Car.findById(req.body._id)
-        .then(car => {
-            if (car) {
-                const {
-                    company,
-                    name,
-                    minimumAge,
-                    available,
-                    type,
-                    locations,
-                    price,
-                    deposit,
-                    seats,
-                    doors,
-                    aircon,
-                    gearbox,
-                    fuelPolicy,
-                    mileage,
-                    cancellation,
-                    amendments,
-                    theftProtection,
-                    collisionDamageWaiver,
-                    fullInsurance,
-                    additionalDriver
-                } = req.body
-
-                car.company = company._id
-                car.minimumAge = minimumAge
-                car.locations = locations
-                car.name = name
-                car.available = available
-                car.type = type
-                car.price = price
-                car.deposit = deposit
-                car.seats = seats
-                car.doors = doors
-                car.aircon = aircon
-                car.gearbox = gearbox
-                car.fuelPolicy = fuelPolicy
-                car.mileage = mileage
-                car.cancellation = cancellation
-                car.amendments = amendments
-                car.theftProtection = theftProtection
-                car.collisionDamageWaiver = collisionDamageWaiver
-                car.fullInsurance = fullInsurance
-                car.additionalDriver = additionalDriver
-
-                car.save()
-                    .then(() => res.sendStatus(200))
-                    .catch(err => {
-                        console.error(`[car.update]  ${strings.DB_ERROR} ${req.body}`, err)
-                        res.status(400).send(strings.DB_ERROR + err)
-                    })
+                await fs.rename(image, newPath)
+                car.image = filename
+                await car.save()
             } else {
-                console.error('[car.update] Car not found:', req.body._id)
-                res.sendStatus(204)
+                await Car.deleteOne({ _id: car._id })
+                console.error(strings.CAR_IMAGE_NOT_FOUND, body)
+                return res.status(400).send(strings.CAR_IMAGE_NOT_FOUND)
             }
-        })
-        .catch(err => {
-            console.error(`[car.update]  ${strings.DB_ERROR} ${req.body}`, err)
-            res.status(400).send(strings.DB_ERROR + err)
-        })
+        }
+
+        return res.json(car)
+    } catch (err) {
+        console.error(`[car.create] ${strings.DB_ERROR} ${body}`, err)
+        return res.status(400).send(strings.ERROR + err)
+    }
 }
 
-export const checkCar = (req, res) => {
-    const id = new mongoose.Types.ObjectId(req.params.id)
+export const update = async (req, res) => {
+    const { _id } = req.body
 
-    Booking.find({ car: id })
-        .limit(1)
-        .count()
-        .then(count => {
-            if (count === 1) {
-                return res.sendStatus(200)
-            }
+    try {
+        const car = await Car.findById(_id)
+
+        if (car) {
+            const {
+                company,
+                name,
+                minimumAge,
+                available,
+                type,
+                locations,
+                price,
+                deposit,
+                seats,
+                doors,
+                aircon,
+                gearbox,
+                fuelPolicy,
+                mileage,
+                cancellation,
+                amendments,
+                theftProtection,
+                collisionDamageWaiver,
+                fullInsurance,
+                additionalDriver
+            } = req.body
+
+            car.company = company._id
+            car.minimumAge = minimumAge
+            car.locations = locations
+            car.name = name
+            car.available = available
+            car.type = type
+            car.price = price
+            car.deposit = deposit
+            car.seats = seats
+            car.doors = doors
+            car.aircon = aircon
+            car.gearbox = gearbox
+            car.fuelPolicy = fuelPolicy
+            car.mileage = mileage
+            car.cancellation = cancellation
+            car.amendments = amendments
+            car.theftProtection = theftProtection
+            car.collisionDamageWaiver = collisionDamageWaiver
+            car.fullInsurance = fullInsurance
+            car.additionalDriver = additionalDriver
+
+            await car.save()
+            return res.sendStatus(200)
+        } else {
+            console.error('[car.update] Car not found:', _id)
             return res.sendStatus(204)
-        })
-        .catch(err => {
-            console.error(`[car.checkCar]  ${strings.DB_ERROR} ${id}`, err)
-            res.status(400).send(strings.DB_ERROR + err)
-        })
+        }
+    } catch (err) {
+        console.error(`[car.update] ${strings.DB_ERROR} ${_id}`, err)
+        return res.status(400).send(strings.ERROR + err)
+    }
+}
+
+export const checkCar = async (req, res) => {
+    const { id } = req.params
+
+    try {
+        const _id = new mongoose.Types.ObjectId(id)
+        const count = await Booking.find({ car: _id }).limit(1).count()
+
+        if (count === 1) {
+            return res.sendStatus(200)
+        }
+        return res.sendStatus(204)
+    } catch (err) {
+        console.error(`[car.check] ${strings.DB_ERROR} ${id}`, err)
+        return res.status(400).send(strings.ERROR + err)
+    }
 }
 
 export const deleteCar = async (req, res) => {
-    const id = req.params.id
+    const { id } = req.params
 
     try {
         const car = await Car.findByIdAndDelete(id)
         if (car) {
             if (car.image) {
                 const image = path.join(CDN, car.image)
-                if (await Helper.fileExists(image)) {
-                    await fs.promises.unlink(image)
+                if (await Helper.exists(image)) {
+                    await fs.unlink(image)
                 }
             }
             await Booking.deleteMany({ car: car._id })
@@ -172,146 +146,141 @@ export const deleteCar = async (req, res) => {
         }
         return res.sendStatus(200)
     } catch (err) {
-        console.error(`[car.delete]  ${strings.DB_ERROR} ${id}`, err)
+        console.error(`[car.delete] ${strings.DB_ERROR} ${id}`, err)
         return res.status(400).send(strings.DB_ERROR + err)
     }
 }
 
 export const createImage = async (req, res) => {
     try {
-        if (!await Helper.fileExists(CDN_TEMP)) {
-            await fs.promises.mkdir(CDN_TEMP, { recursive: true })
+        if (!await Helper.exists(CDN_TEMP)) {
+            await fs.mkdir(CDN_TEMP, { recursive: true })
         }
 
         const filename = `${uuid()}_${Date.now()}${path.extname(req.file.originalname)}`
         const filepath = path.join(CDN_TEMP, filename)
 
-        await fs.promises.writeFile(filepath, req.file.buffer)
-        res.json(filename)
+        await fs.writeFile(filepath, req.file.buffer)
+        return res.json(filename)
     } catch (err) {
-        console.error(strings.ERROR, err)
-        res.status(400).send(strings.ERROR + err)
+        console.error(`[car.createImage] ${strings.DB_ERROR}`, err)
+        return res.status(400).send(strings.ERROR + err)
     }
 }
 
-export const updateImage = (req, res) => {
+export const updateImage = async (req, res) => {
+    const { id } = req.params
+    const { file } = req
 
-    Car.findById(req.params.id)
-        .then(async car => {
-            if (car) {
-                if (await Helper.fileExists(CDN)) {
-                    await fs.promises.mkdir(CDN, { recursive: true })
-                }
+    try {
+        const car = await Car.findById(id)
 
-                if (car.image) {
-                    const image = path.join(CDN, car.image)
-                    if (await Helper.fileExists(image)) {
-                        await fs.promises.unlink(image)
-                    }
-                }
-
-                const filename = `${car._id}_${Date.now()}${path.extname(req.file.originalname)}`
-                const filepath = path.join(CDN, filename)
-
-                await fs.promises.writeFile(filepath, req.file.buffer)
-                car.image = filename
-                car.save()
-                    .then(usr => {
-                        res.sendStatus(200)
-                    })
-                    .catch(err => {
-                        console.error(strings.DB_ERROR, err)
-                        res.status(400).send(strings.DB_ERROR + err)
-                    })
-            } else {
-                console.error('[car.updateImage] Car not found:', req.params.id)
-                res.sendStatus(204)
+        if (car) {
+            if (!await Helper.exists(CDN)) {
+                await fs.mkdir(CDN, { recursive: true })
             }
-        })
-        .catch(err => {
-            console.error(strings.DB_ERROR, err)
-            res.status(400).send(strings.DB_ERROR + err)
-        })
+
+            if (car.image) {
+                const image = path.join(CDN, car.image)
+                if (await Helper.exists(image)) {
+                    await fs.unlink(image)
+                }
+            }
+
+            const filename = `${car._id}_${Date.now()}${path.extname(file.originalname)}`
+            const filepath = path.join(CDN, filename)
+
+            await fs.writeFile(filepath, file.buffer)
+            car.image = filename
+            await car.save()
+            return res.sendStatus(200)
+        } else {
+            console.error('[car.updateImage] Car not found:', id)
+            return res.sendStatus(204)
+        }
+    } catch (err) {
+        console.error(`[car.updateImage] ${strings.DB_ERROR} ${id}`, err)
+        return res.status(400).send(strings.DB_ERROR + err)
+    }
 }
 
-export const deleteImage = (req, res) => {
+export const deleteImage = async (req, res) => {
+    const { id } = req.params
 
-    Car.findById(req.params.id)
-        .then(async car => {
-            if (car) {
-                if (car.image) {
-                    const image = path.join(CDN, car.image)
-                    if (await Helper.fileExists(image)) {
-                        await fs.promises.unlink(image)
-                    }
+    try {
+        const car = await Car.findById(id)
+
+        if (car) {
+            if (car.image) {
+                const image = path.join(CDN, car.image)
+                if (await Helper.exists(image)) {
+                    await fs.unlink(image)
                 }
-                car.image = null
-
-                car.save()
-                    .then(() => {
-                        res.sendStatus(200)
-                    })
-                    .catch(err => {
-                        console.error(strings.DB_ERROR, err)
-                        res.status(400).send(strings.DB_ERROR + err)
-                    })
-            } else {
-                console.error('[car.deleteImage] Car not found:', req.params.id)
-                res.sendStatus(204)
             }
-        })
-        .catch(err => {
-            console.error(strings.DB_ERROR, err)
-            res.status(400).send(strings.DB_ERROR + err)
-        })
+            car.image = null
+
+            await car.save()
+            return res.sendStatus(200)
+        } else {
+            console.error('[car.deleteImage] Car not found:', id)
+            res.sendStatus(204)
+        }
+    } catch (err) {
+        console.error(`[car.deleteImage] ${strings.DB_ERROR} ${id}`, err)
+        return res.status(400).send(strings.DB_ERROR + err)
+    }
 }
 
 export const deleteTempImage = async (req, res) => {
+    const { image } = req.params
+
     try {
-        const image = path.join(CDN_TEMP, req.params.image)
-        if (await Helper.fileExists(image)) {
-            await fs.promises.unlink(image)
+        const imageFile = path.join(CDN_TEMP, image)
+        if (await Helper.exists(imageFile)) {
+            await fs.unlink(imageFile)
         }
         res.sendStatus(200)
     } catch (err) {
-        console.error(strings.ERROR, err)
+        console.error(`[car.deleteTempImage] ${strings.DB_ERROR} ${image}`, err)
         res.status(400).send(strings.ERROR + err)
     }
 }
 
-export const getCar = (req, res) => {
-    Car.findById(req.params.id)
-        .populate('company')
-        .populate({
-            path: 'locations',
-            populate: {
-                path: 'values',
-                model: 'LocationValue',
-            }
-        })
-        .lean()
-        .then(car => {
-            if (car) {
-                if (car.company) {
-                    const { _id, fullName, avatar, payLater } = car.company
-                    car.company = { _id, fullName, avatar, payLater }
-                }
+export const getCar = async (req, res) => {
+    const { id, language } = req.params
 
-                for (let i = 0; i < car.locations.length; i++) {
-                    const location = car.locations[i]
-                    location.name = location.values.filter(value => value.language === req.params.language)[0].value
+    try {
+        const car = await Car.findById(id)
+            .populate('company')
+            .populate({
+                path: 'locations',
+                populate: {
+                    path: 'values',
+                    model: 'LocationValue',
                 }
+            })
+            .lean()
 
-                res.json(car)
-            } else {
-                console.error('[car.getCar] Car not found:', req.params.id)
-                res.sendStatus(204)
+        if (car) {
+            if (car.company) {
+                const { _id, fullName, avatar, payLater } = car.company
+                car.company = { _id, fullName, avatar, payLater }
             }
-        })
-        .catch(err => {
-            console.error(`[car.getCar] ${strings.DB_ERROR} ${req.params.id}`, err)
-            res.status(400).send(strings.DB_ERROR + err)
-        })
+
+            for (let i = 0; i < car.locations.length; i++) {
+                const location = car.locations[i]
+                location.name = location.values.filter(value => value.language === language)[0].value
+            }
+
+            return res.json(car)
+        } else {
+            console.error('[car.getCar] Car not found:', id)
+            return res.sendStatus(204)
+        }
+    } catch (err) {
+        console.error(`[car.getCar] ${strings.DB_ERROR} ${id}`, err)
+        return res.status(400).send(strings.ERROR + err)
+    }
 }
 
 export const getCars = async (req, res) => {
@@ -367,7 +336,7 @@ export const getCars = async (req, res) => {
             }
         }
 
-        const cars = await Car.aggregate([
+        const data = await Car.aggregate([
             { $match },
             {
                 $lookup: {
@@ -414,16 +383,18 @@ export const getCars = async (req, res) => {
             }
         ], { collation: { locale: Env.DEFAULT_LANGUAGE, strength: 2 } })
 
-        cars.forEach(car => {
-            if (car.company) {
-                const { _id, fullName, avatar } = car.company
-                car.company = { _id, fullName, avatar }
-            }
-        })
+        if (data.length > 0) {
+            data[0].resultData.forEach(car => {
+                if (car.company) {
+                    const { _id, fullName, avatar } = car.company
+                    car.company = { _id, fullName, avatar }
+                }
+            })
+        }
 
-        return res.json(cars)
+        return res.json(data)
     } catch (err) {
-        console.error(`[car.getCars]  ${strings.DB_ERROR} ${req.query.s}`, err)
+        console.error(`[car.getCars] ${strings.DB_ERROR} ${req.query.s}`, err)
         return res.status(400).send(strings.DB_ERROR + err)
     }
 }
@@ -455,7 +426,7 @@ export const getBookingCars = async (req, res) => {
 
         return res.json(cars)
     } catch (err) {
-        console.error(`[car.getBookingCars]  ${strings.DB_ERROR} ${req.query.s}`, err)
+        console.error(`[car.getBookingCars] ${strings.DB_ERROR} ${req.query.s}`, err)
         return res.status(400).send(strings.DB_ERROR + err)
     }
 }
@@ -495,7 +466,7 @@ export const getFrontendCars = async (req, res) => {
             $match.$and.push({ deposit: { $lte: deposit } })
         }
 
-        const cars = await Car.aggregate([
+        const data = await Car.aggregate([
             { $match },
             {
                 $lookup: {
@@ -542,16 +513,18 @@ export const getFrontendCars = async (req, res) => {
             }
         ], { collation: { locale: Env.DEFAULT_LANGUAGE, strength: 2 } })
 
-        cars.forEach(car => {
-            if (car.company) {
-                const { _id, fullName, avatar } = car.company
-                car.company = { _id, fullName, avatar }
-            }
-        })
+        if (data.length > 0) {
+            data[0].resultData.forEach(car => {
+                if (car.company) {
+                    const { _id, fullName, avatar } = car.company
+                    car.company = { _id, fullName, avatar }
+                }
+            })
+        }
 
-        return res.json(cars)
+        return res.json(data)
     } catch (err) {
-        console.error(`[car.getCars]  ${strings.DB_ERROR} ${req.query.s}`, err)
+        console.error(`[car.getCars] ${strings.DB_ERROR} ${req.query.s}`, err)
         return res.status(400).send(strings.DB_ERROR + err)
     }
 }

@@ -16,7 +16,7 @@ import {
     Button,
     Drawer,
     List,
-    ListItem,
+    ListItemButton,
     ListItemIcon,
     ListItemText,
 
@@ -35,14 +35,16 @@ import {
     Login as LoginIcon,
     EventSeat as BookingsIcon
 } from '@mui/icons-material'
+import { useNavigate } from 'react-router-dom'
 
 import '../assets/css/header.css'
 
 const ListItemLink = (props) => (
-    <ListItem button component="a" {...props} />
+    <ListItemButton component="a" {...props} />
 )
 
 const Header = (props) => {
+    const navigate = useNavigate()
     const [lang, setLang] = useState(Env.DEFAULT_LANGUAGE)
     const [anchorEl, setAnchorEl] = useState(null)
     const [langAnchorEl, setLangAnchorEl] = useState(null)
@@ -94,7 +96,7 @@ const Header = (props) => {
 
         if (params.has('l')) {
             params.delete('l')
-            window.location.href = window.location.href.split('?')[0] + ([...params].length > 0 ? ('?' + params) : '')
+            navigate(window.location.href.split('?')[0] + ([...params].length > 0 ? ('?' + params) : ''))
         } else {
             window.location.reload()
         }
@@ -150,7 +152,7 @@ const Header = (props) => {
     }
 
     const handleOnSettingsClick = () => {
-        window.location.href = '/settings'
+        navigate('/settings')
     }
 
     const handleSignout = () => {
@@ -169,8 +171,8 @@ const Header = (props) => {
         setSideAnchorEl(null)
     }
 
-    const handleNotificationsClick = (e) => {
-        window.location.href = '/notifications'
+    const handleNotificationsClick = () => {
+        navigate('/notifications')
     }
 
     useEffect(() => {
@@ -288,7 +290,7 @@ const Header = (props) => {
 
     return (
         !props.hidden &&
-        <div style={classes.grow} >
+        <div style={classes.grow} className='header'>
             <AppBar position="fixed" sx={{ bgcolor: '#f37022' }}>
                 <Toolbar className='toolbar'>
                     {isLoaded && !loading && <IconButton

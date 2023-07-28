@@ -5,7 +5,6 @@ import { strings as csStrings } from '../lang/cars'
 import { strings } from '../lang/booking-list'
 import * as Helper from '../common/Helper'
 import * as BookingService from '../services/BookingService'
-import Backdrop from '../components/SimpleBackdrop'
 import {
     DataGrid,
     frFR,
@@ -30,7 +29,6 @@ import {
     Check as CheckIcon,
     Cancel as CancelIcon
 } from '@mui/icons-material'
-import * as UserService from '../services/UserService'
 import { format } from 'date-fns'
 import { fr as dfnsFR, enUS as dfnsENUS } from "date-fns/locale"
 
@@ -55,6 +53,13 @@ const BookingList = (props) => {
     const [cancelRequestSent, setCancelRequestSent] = useState(false)
     const [cancelRequestProcessing, setCancelRequestProcessing] = useState(false)
     const [offset, setOffset] = useState(0)
+    const [paginationModel, setPaginationModel] = useState({ pageSize: Env.BOOKINGS_PAGE_SIZE, page: 0 })
+    const [load, setLoad] = useState(false)
+
+    useEffect(() => {
+        setPage(paginationModel.page)
+        setPageSize(paginationModel.pageSize)
+    }, [paginationModel])
 
     const _fetch = (page, user) => {
         const _pageSize = Env.isMobile() ? Env.BOOKINGS_MOBILE_PAGE_SIZE : pageSize
@@ -66,6 +71,7 @@ const BookingList = (props) => {
                 .then(data => {
                     const _data = data.length > 0 ? data[0] : {}
                     const totalRecords = _data.pageInfo.length > 0 ? _data.pageInfo[0].totalRecords : 0
+
                     if (Env.isMobile()) {
                         const _rows = page === 0 ? _data.resultData : [...rows, ..._data.resultData]
                         setRows(_rows)
@@ -83,9 +89,11 @@ const BookingList = (props) => {
                         }
                         setLoading(false)
                     }
+
+                    setLoad(false)
                 })
                 .catch((err) => {
-                    UserService.signout()
+                    Helper.error(err)
                 })
         } else {
             setRows([])
@@ -129,11 +137,18 @@ const BookingList = (props) => {
     }, [reload]) // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
+        if (load) {
+            _fetch(page, user)
+            setLoad(false)
+        }
+    }, [load]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
         if (props.user && companies.length > 0 && statuses.length > 0) {
             const columns = getColumns()
             setUser(props.user)
             setColumns(columns)
-            _fetch(page, props.user)
+            setLoad(true)
         }
     }, [props.user, page, pageSize, companies, statuses, filter]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -146,7 +161,7 @@ const BookingList = (props) => {
                     if (fetch
                         && !loading
                         && event.target.scrollTop > 0
-                        && (event.target.offsetHeight + event.target.scrollTop + offset) >= (event.target.scrollHeight - Env.CAR_PAGE_OFFSET)) {
+                        && (event.target.offsetHeight + event.target.scrollTop) >= event.target.scrollHeight) {
                         const p = page + 1
                         setPage(p)
                     }
@@ -196,6 +211,9 @@ const BookingList = (props) => {
                 renderCell: (params) => (
                     <span className={`bs bs-${params.value}`}>{Helper.getBookingStatus(params.value)}</span>
                 ),
+                valueGetter: (params) => (
+                    params.value
+                )
             },
             {
                 field: 'action',
@@ -216,11 +234,13 @@ const BookingList = (props) => {
                                     <ViewIcon />
                                 </IconButton>
                             </Tooltip>
-                            {params.row.cancellation
+                            {
+                                params.row.cancellation
                                 && !params.row.cancelRequest
                                 && params.row.status !== Env.BOOKING_STATUS.CANCELLED
                                 && new Date(params.row.from) > new Date()
-                                && <Tooltip title={strings.CANCEL}>
+                                &&
+                                <Tooltip title={strings.CANCEL}>
                                     <IconButton onClick={cancelBooking}>
                                         <CancelIcon />
                                     </IconButton>
@@ -239,9 +259,9 @@ const BookingList = (props) => {
                 field: 'car',
                 headerName: strings.CAR,
                 flex: 1,
-                renderCell: (params) => (
+                valueGetter: (params) => (
                     params.value.name
-                ),
+                )
             })
         }
 
@@ -251,10 +271,15 @@ const BookingList = (props) => {
                 headerName: commonStrings.SUPPLIER,
                 flex: 1,
                 renderCell: (params) => (
-                    <img src={Helper.joinURL(Env.CDN_USERS, params.value.avatar)}
-                        alt={params.value.fullName}
-                        style={{ width: Env.COMPANY_IMAGE_WIDTH }} />
+                    <div className='cell-company'>
+                        <img src={Helper.joinURL(Env.CDN_USERS, params.row.company.avatar)}
+                            alt={params.value}
+                        />
+                    </div>
                 ),
+                valueGetter: (params) => (
+                    params.value.fullName
+                )
             })
         }
 
@@ -314,7 +339,7 @@ const BookingList = (props) => {
                     :
                     Env.isMobile() ?
                         <>
-                            {rows.map((booking, index) => {
+                            {rows.map((booking) => {
                                 const from = new Date(booking.from)
                                 const to = new Date(booking.to)
                                 const days = Helper.days(from, to)
@@ -350,7 +375,6 @@ const BookingList = (props) => {
                                                 <div className='car-company'>
                                                     <img src={Helper.joinURL(Env.CDN_USERS, booking.company.avatar)}
                                                         alt={booking.company.fullName}
-                                                        style={{ height: Env.COMPANY_IMAGE_HEIGHT }}
                                                     />
                                                     <label className='car-company-name'>{booking.company.fullName}</label>
                                                 </div>
@@ -452,25 +476,17 @@ const BookingList = (props) => {
                             columns={columns}
                             rows={rows}
                             rowCount={rowCount}
-                            // loading={loading}
+                            loading={loading}
                             initialState={{
                                 pagination: { paginationModel: { pageSize: Env.BOOKINGS_PAGE_SIZE } },
-                              }}
+                            }}
                             pageSizeOptions={[Env.BOOKINGS_PAGE_SIZE, 50, 100]}
-                            pagination
-                            page={page}
-                            pageSize={pageSize}
                             paginationMode='server'
-                            onPageChange={(page) => {
-                                setPage(page)
-                            }}
-                            onPageSizeChange={(pageSize) => {
-                                setPage(0)
-                                setPageSize(pageSize)
-                            }}
+                            paginationModel={paginationModel}
+                            onPaginationModelChange={setPaginationModel}
                             localeText={(user.language === 'fr' ? frFR : enUS).components.MuiDataGrid.defaultProps.localeText}
-                            components={{
-                                NoRowsOverlay: () => ''
+                            slots={{
+                                noRowsOverlay: () => ''
                             }}
                             disableSelectionOnClick
                         />)
@@ -504,8 +520,6 @@ const BookingList = (props) => {
                     }
                 </DialogActions>
             </Dialog>
-
-            {loading && <Backdrop text={commonStrings.LOADING} />}
         </div>
     )
 }

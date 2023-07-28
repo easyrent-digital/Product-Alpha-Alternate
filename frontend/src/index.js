@@ -4,10 +4,14 @@ import App from './App'
 import Env from './config/env.config'
 import { strings as commonStrings } from './lang/common'
 import * as UserService from './services/UserService'
-import { ToastContainer, toast } from 'react-toastify'
+import { ToastContainer } from 'react-toastify'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
-import { frFR, enUS } from '@mui/material/locale'
+
+import { frFR as corefrFR, enUS as coreenUS } from '@mui/material/locale'
+import { frFR, enUS } from '@mui/x-date-pickers/locales'
+import { frFR as dataGridfrFR, enUS as dataGridenUS } from '@mui/x-data-grid'
+import * as Helper from './common/Helper'
 
 import 'react-toastify/dist/ReactToastify.min.css'
 import './assets/css/common.css'
@@ -46,11 +50,11 @@ if (lang !== '') {
                     if (status === 200) {
                         const status = await UserService.updateLanguage(data)
                         if (status !== 200) {
-                            toast(commonStrings.CHANGE_LANGUAGE_ERROR, { type: 'error' })
+                            Helper.error(null, commonStrings.CHANGE_LANGUAGE_ERROR)
                         }
                     }
-                }).catch(() => {
-                    toast(commonStrings.CHANGE_LANGUAGE_ERROR, { type: 'error' })
+                }).catch((err) => {
+                    Helper.error(err, commonStrings.CHANGE_LANGUAGE_ERROR)
                 })
             language = lang
         }
@@ -62,8 +66,10 @@ if (lang !== '') {
 }
 
 language = UserService.getLanguage()
+const isFr = language === 'fr'
 
-const theme = createTheme({
+const theme = createTheme(
+    {
     typography: {
         fontFamily: [
             '-apple-system',
@@ -134,7 +140,11 @@ const theme = createTheme({
             },
         },
     },
-}, language === 'fr' ? frFR : enUS)
+}
+, isFr ? frFR : enUS
+, isFr ? dataGridfrFR : dataGridenUS
+, isFr ? corefrFR : coreenUS
+)
 
 root.render(
     <ThemeProvider theme={theme}>

@@ -10,7 +10,7 @@ import strings from './config/app.config.js'
 import userRoutes from './routes/userRoutes.js'
 import carRoutes from './routes/carRoutes.js'
 import notificationRoutes from './routes/notificationRoutes.js'
-import companyRoutes from './routes/companyRoutes.js'
+import supplierRoutes from './routes/supplierRoutes.js'
 import locationRoutes from './routes/locationRoutes.js'
 import bookingRoutes from './routes/bookingRoutes.js'
 import rateLimit from 'express-rate-limit'
@@ -61,7 +61,7 @@ mongoose.Promise = global.Promise
 mongoose.connect(DB_URI, options)
     .then(
         () => { console.log('Database is connected') },
-        err => { console.error('Cannot connect to the database:', err) }
+        (err) => { console.error('Cannot connect to the database:', err) }
     )
 
 // -------- LOGGING:
@@ -122,7 +122,7 @@ app.use(cors())
 // -------- ROUTES
 // Define the base routes for each feature of the app
 app.use('/', userRoutes)
-app.use('/', companyRoutes)
+app.use('/', supplierRoutes)
 app.use('/', locationRoutes)
 app.use('/', carRoutes)
 app.use('/', bookingRoutes)

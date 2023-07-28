@@ -11,19 +11,19 @@ if [ "$1" == "all" ]; then
   echo "Deploying all application services..."
   echo "--- Deploying API service..."
   /bin/bash /opt/$CODE_REPO_NAME/__scripts/bc-deploy-api.sh
-  echo "--- Deploying backoffice service..."
-  /bin/bash /opt/$CODE_REPO_NAME/__scripts/bc-deploy-backoffice.sh
+  echo "--- Deploying backend service..."
+  /bin/bash /opt/$CODE_REPO_NAME/__scripts/bc-deploy-backend.sh
   echo "--- Deploying frontend service..."
   /bin/bash /opt/$CODE_REPO_NAME/__scripts/bc-deploy-frontend.sh
 elif [ "$1" == "api" ]; then
   echo "Deploying API service only..."
   /bin/bash /opt/$CODE_REPO_NAME/__scripts/bc-deploy-api.sh
-elif [ "$1" == "backoffice" ]; then
-  echo "Deploying backoffice service only..."
-  /bin/bash /opt/$CODE_REPO_NAME/__scripts/bc-deploy-backoffice.sh
+elif [ "$1" == "backend" ]; then
+  echo "Deploying backend service only..."
+  /bin/bash /opt/$CODE_REPO_NAME/__scripts/bc-deploy-backend.sh
 elif [ "$1" == "frontend" ]; then
   echo "Deploying frontend service only..."
   /bin/bash /opt/$CODE_REPO_NAME/__scripts/bc-deploy-frontend.sh
 else
-  echo "Please provide an input: app-deploy all|api|backoffice|frontend"
+  echo "Please provide an input: app-deploy all|api|backend|frontend"
 fi

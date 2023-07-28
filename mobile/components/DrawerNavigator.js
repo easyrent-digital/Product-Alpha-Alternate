@@ -11,7 +11,7 @@ import {
     useNavigation,
     useNavigationState
 } from '@react-navigation/native'
-import { getHeaderTitle } from '@react-navigation/elements'
+// import { getHeaderTitle } from '@react-navigation/elements'
 import { MaterialIcons } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -34,7 +34,7 @@ import DrawerContent from './DrawerContent'
 import CreateBookingScreen from '../screens/CreateBooking'
 import NotificationsScreen from '../screens/NotificationsScreen'
 
-const DrawerNavigator = (props) => {
+const DrawerNavigator = () => {
     const buildLink = useLinkBuilder()
     const navigation = useNavigation()
     const routes = useNavigationState(state => state && state.routes)
@@ -172,7 +172,7 @@ const DrawerNavigator = (props) => {
                         activeTintColor="#f37022"
                         buildLink={buildLink}
                         {...props} />}
-                useLegacyImplementation
+                // useLegacyImplementation
             >
                 {
                     drawerItems.map(drawer => (
@@ -207,7 +207,7 @@ const DrawerNavigator = (props) => {
                                     )
                                         ? 0 : 'auto'
                                 },
-                                drawerIcon: ({ focused }) =>
+                                drawerIcon: () =>
                                     <MaterialIcons
                                         name={drawer.iconName}
                                         size={24}

@@ -17,8 +17,10 @@ import {
 const Env = {
     APP_TYPE: BC_APP_TYPE || 'frontend',
     API_HOST: BC_API_HOST,
+    AXIOS_RETRIES: 3,
+    AXIOS_RETRIES_INTERVAL: 500, // milliseconds
     LANGUAGES: ['fr', 'en'],
-    DEFAULT_LANGUAGE: BC_DEFAULT_LANGUAGE || 'fr',
+    DEFAULT_LANGUAGE: BC_DEFAULT_LANGUAGE || 'en',
     LANGUAGE: {
         FR: 'fr',
         EN: 'en'
