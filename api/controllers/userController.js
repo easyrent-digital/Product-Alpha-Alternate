@@ -104,13 +104,9 @@ export const adminSignup = async (req, res) => {
                 const newPath = path.join(CDN, filename)
 
                 try {
-                    await fs.prompises.rename(avatar, newPath)
+                    await fs.rename(avatar, newPath)
                     user.avatar = filename
-                    user.save()
-                        .catch((err) => {
-                            console.error(strings.DB_ERROR, err)
-                            res.status(400).send(strings.DB_ERROR + err)
-                        })
+                    await user.save()
                 } catch (err) {
                     console.error(strings.ERROR, err)
                     res.status(400).send(strings.ERROR + err)
@@ -171,11 +167,7 @@ export const create = async (req, res) => {
                 try {
                     await fs.rename(avatar, newPath)
                     user.avatar = filename
-                    user.save()
-                        .catch((err) => {
-                            console.error(strings.DB_ERROR, err)
-                            res.status(400).send(strings.DB_ERROR + err)
-                        })
+                    await user.save()
                 } catch (err) {
                     console.error(strings.ERROR, err)
                     res.status(400).send(strings.ERROR + err)
@@ -316,7 +308,7 @@ export const resend = async (req, res) => {
             return res.sendStatus(204)
         }
     } catch (err) {
-        console.error(`[user.deleteTokens] ${strings.DB_ERROR} ${email}`, err)
+        console.error(`[user.resend] ${strings.DB_ERROR} ${email}`, err)
         return res.status(400).send(strings.DB_ERROR + err)
     }
 }
@@ -631,7 +623,7 @@ export const getUser = async (req, res) => {
             return res.json(user)
         }
     } catch (err) {
-        console.error(`[user.updateLanguage] ${strings.DB_ERROR} ${id}`, err)
+        console.error(`[user.getUser] ${strings.DB_ERROR} ${id}`, err)
         return res.status(400).send(strings.DB_ERROR + err)
     }
 }

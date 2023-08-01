@@ -57,14 +57,12 @@ if (DB_SSL) {
 mongoose.set('debug', DB_DEBUG)
 // Set Mongoose Promise to use Node.js global Promise
 mongoose.Promise = global.Promise
-// Connect to MongoDB using Mongoose
-mongoose.connect(DB_URI, options)
-    .then(
-        () => { console.log('Database is connected') },
-        (err) => { console.error('Cannot connect to the database:', err) }
-    )
-
-// -------- LOGGING:
+try {
+    await mongoose.connect(DB_URI, options)
+    console.log('Database is connected')
+} catch (err) {
+    console.error('Cannot connect to the database:', err)
+}
 // setup morgan for logging
 app.use(morgan('combined'))
 
@@ -74,6 +72,7 @@ const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100 // limit each IP to 100 requests per windowMs
   })
+
 
 const app = express()
 app.use(limiter)

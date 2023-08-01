@@ -1,11 +1,11 @@
-# API
-FROM node:16
-WORKDIR /app
-COPY package*.json ./
-# Use "npm ci" in prod. "npm i" can be used in dev and is faster.
-RUN npm ci 
-RUN sudo systemctl restart api
-RUN sudo systemctl status api --no-pager
-COPY . ./
-EXPOSE 4000
-CMD ["node", "server.js"]
+FROM node:18-alpine
+WORKDIR /api
+RUN mkdir -p /var/www/cdn/bookcars/users
+RUN mkdir -p /var/www/cdn/bookcars/temp/users
+RUN mkdir -p /var/www/cdn/bookcars/cars
+RUN mkdir -p /var/www/cdn/bookcars/temp/cars
+COPY ./package.json ./package-lock.json ./
+RUN npm install --omit=dev
+COPY . .
+EXPOSE 4002
+CMD [ "npm", "start"]

@@ -167,18 +167,17 @@ const CreateCompany = () => {
         }
     }
 
-    const handleCancel = () => {
-        if (avatar) {
-            setLoading(true)
+    const handleCancel = async () => {
+        try {
+            if (avatar) {
+                setLoading(true)
 
-            UserService.deleteTempAvatar(avatar)
-                .then(() => {
-                    navigate('/suppliers')
-                })
-                .catch(() => {
-                    navigate('/suppliers')
-                })
-        } else {
+                await UserService.deleteTempAvatar(avatar)
+                navigate('/suppliers')
+            } else {
+                navigate('/suppliers')
+            }
+        } catch {
             navigate('/suppliers')
         }
     }
@@ -190,54 +189,52 @@ const CreateCompany = () => {
     }
 
     const handleSubmit = async (e) => {
-        e.preventDefault()
+        try {
+            e.preventDefault()
 
-        const emailValid = await validateEmail(email)
-        if (!emailValid) {
-            return
+            const emailValid = await validateEmail(email)
+            if (!emailValid) {
+                return
+            }
+
+            const fullNameValid = await validateFullName(fullName)
+            if (!fullNameValid) {
+                return
+            }
+
+            const phoneValid = validatePhone(phone)
+            if (!phoneValid) {
+                return
+            }
+
+            if (!avatar) {
+                setAvatarError(true)
+                setError(false)
+                return
+            }
+
+            const data = {
+                email,
+                fullName,
+                phone,
+                location,
+                bio,
+                language: UserService.getLanguage(),
+                type: Env.RECORD_TYPE.COMPANY,
+                avatar,
+                payLater
+            }
+
+            const status = await UserService.create(data)
+
+            if (status === 200) {
+                navigate('/suppliers')
+            } else {
+                setError(true)
+            }
+        } catch (err) {
+            Helper.error(err)
         }
-
-        const fullNameValid = await validateFullName(fullName)
-        if (!fullNameValid) {
-            return
-        }
-
-        const phoneValid = validatePhone(phone)
-        if (!phoneValid) {
-            return
-        }
-
-        if (!avatar) {
-            setAvatarError(true)
-            setError(false)
-            return
-        }
-
-        setLoading(true)
-
-        const data = {
-            email,
-            fullName,
-            phone,
-            location,
-            bio,
-            language: UserService.getLanguage(),
-            type: Env.RECORD_TYPE.COMPANY,
-            avatar,
-            payLater
-        }
-
-        UserService.create(data)
-            .then(status => {
-                if (status === 200) {
-                    navigate('/suppliers')
-                } else {
-                    setError(true)
-                    setLoading(false)
-                }
-            }).catch((err) => {
-                Helper.error(err)
-            })
     }
 
     return (

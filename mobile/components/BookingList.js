@@ -38,7 +38,7 @@ const BookingList = (props) => {
                 setLoading(true)
                 setFetch(true)
                 const data = await BookingService.getBookings(payload, _page, Env.BOOKINGS_PAGE_SIZE)
-                const _data = data.length > 0 ? data[0] : {}
+                const _data = Array.isArray(data) && data.length > 0 ? data[0] : { resultData: [] }
                 const _rows = _page === 0 ? _data.resultData : [...rows, ..._data.resultData]
                 setRows(_rows)
                 setFetch(_data.resultData.length > 0)
@@ -143,7 +143,7 @@ const BookingList = (props) => {
                                 <Text style={styles.detailText}>{booking.dropOffLocation.name}</Text>
 
                                 <Text style={styles.detailTitle}>{i18n.t('CAR')}</Text>
-                                <Text style={styles.detailText}>{`${booking.car.name} (${booking.car.price} ${i18n.t('CAR_CURRENCY')})`}</Text>
+                                <Text style={styles.detailText}>{`${booking.car.name} (${Helper.formatPrice(booking.car.price)} ${i18n.t('CAR_CURRENCY')})`}</Text>
 
                                 <Text style={styles.detailTitle}>{i18n.t('SUPPLIER')}</Text>
                                 <View style={styles.company}>
@@ -212,7 +212,7 @@ const BookingList = (props) => {
                                 }
 
                                 <Text style={styles.detailTitle}>{i18n.t('COST')}</Text>
-                                <Text style={styles.detailTextBold}>{`${booking.price} ${i18n.t('CURRENCY')}`}</Text>
+                                <Text style={styles.detailTextBold}>{`${Helper.formatPrice(booking.price)} ${i18n.t('CURRENCY')}`}</Text>
 
                                 {booking.cancellation
                                     && !booking.cancelRequest

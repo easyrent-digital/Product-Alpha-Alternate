@@ -41,7 +41,6 @@ const BookingList = (props) => {
     const [columns, setColumns] = useState([])
     const [rows, setRows] = useState([])
     const [rowCount, setRowCount] = useState(0)
-    const [loading, setLoading] = useState(true)
     const [fetch, setFetch] = useState(false)
     const [selectedId, setSelectedId] = useState()
     const [companies, setCompanies] = useState(props.companies)
@@ -55,53 +54,52 @@ const BookingList = (props) => {
     const [offset, setOffset] = useState(0)
     const [paginationModel, setPaginationModel] = useState({ pageSize: Env.BOOKINGS_PAGE_SIZE, page: 0 })
     const [load, setLoad] = useState(false)
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         setPage(paginationModel.page)
         setPageSize(paginationModel.pageSize)
     }, [paginationModel])
 
-    const _fetch = (page, user) => {
-        const _pageSize = Env.isMobile() ? Env.BOOKINGS_MOBILE_PAGE_SIZE : pageSize
+    const _fetch = async (page, user) => {
+        try {
+            const _pageSize = Env.isMobile() ? Env.BOOKINGS_MOBILE_PAGE_SIZE : pageSize
 
-        if (companies.length > 0) {
-            setLoading(true)
+            if (companies.length > 0) {
+                setLoading(true)
 
-            BookingService.getBookings({ companies, statuses, filter, car, user: ((user && user._id) || undefined) }, page, _pageSize)
-                .then(data => {
-                    const _data = data.length > 0 ? data[0] : {}
-                    const totalRecords = _data.pageInfo.length > 0 ? _data.pageInfo[0].totalRecords : 0
+                const data = await BookingService.getBookings({ companies, statuses, filter, car, user: ((user && user._id) || undefined) }, page, _pageSize)
+                const _data = Array.isArray(data) && data.length > 0 ? data[0] : { resultData: [] }
+                const totalRecords = Array.isArray(_data.pageInfo) && _data.pageInfo.length > 0 ? _data.pageInfo[0].totalRecords : 0
 
-                    if (Env.isMobile()) {
-                        const _rows = page === 0 ? _data.resultData : [...rows, ..._data.resultData]
-                        setRows(_rows)
-                        setRowCount(totalRecords)
-                        setFetch(_data.resultData.length > 0)
-                        if (props.onLoad) {
-                            props.onLoad({ rows: _data.resultData, rowCount: totalRecords })
-                        }
-                        setLoading(false)
-                    } else {
-                        setRows(_data.resultData)
-                        setRowCount(totalRecords)
-                        if (props.onLoad) {
-                            props.onLoad({ rows: _data.resultData, rowCount: totalRecords })
-                        }
-                        setLoading(false)
+                if (Env.isMobile()) {
+                    const _rows = page === 0 ? _data.resultData : [...rows, ..._data.resultData]
+                    setRows(_rows)
+                    setRowCount(totalRecords)
+                    setFetch(_data.resultData.length > 0)
+                    if (props.onLoad) {
+                        props.onLoad({ rows: _data.resultData, rowCount: totalRecords })
                     }
+                } else {
+                    setRows(_data.resultData)
+                    setRowCount(totalRecords)
+                    if (props.onLoad) {
+                        props.onLoad({ rows: _data.resultData, rowCount: totalRecords })
+                    }
+                }
 
-                    setLoad(false)
-                })
-                .catch((err) => {
-                    Helper.error(err)
-                })
-        } else {
-            setRows([])
-            setRowCount(0)
-            if (props.onLoad) {
-                props.onLoad({ rows: [], rowCount: 0 })
+            } else {
+                setRows([])
+                setRowCount(0)
+                if (props.onLoad) {
+                    props.onLoad({ rows: [], rowCount: 0 })
+                }
             }
+        } catch (err) {
+            Helper.error(err)
+        } finally {
             setLoading(false)
+            setLoad(false)
         }
     }
 
@@ -172,7 +170,7 @@ const BookingList = (props) => {
 
     const getDate = (date) => {
         const d = new Date(date)
-        return `${Helper.formatNumber(d.getDate())}-${Helper.formatNumber(d.getMonth() + 1)}-${d.getFullYear()}`
+        return `${Helper.formatDatePart(d.getDate())}-${Helper.formatDatePart(d.getMonth() + 1)}-${d.getFullYear()}`
     }
 
     const getColumns = () => {
@@ -198,7 +196,7 @@ const BookingList = (props) => {
                 headerName: strings.PRICE,
                 flex: 1,
                 valueGetter: (params) => (
-                    `${params.value} ${strings.CURRENCY}`
+                    `${Helper.formatPrice(params.value)} ${strings.CURRENCY}`
                 ),
                 renderCell: (params) => (
                     <span className='bp'>{params.value}</span>
@@ -352,7 +350,7 @@ const BookingList = (props) => {
                                         <div className='booking-detail' style={{ height: bookingDetailHeight }}>
                                             <label className='booking-detail-title'>{strings.CAR}</label>
                                             <div className='booking-detail-value'>
-                                                {`${booking.car.name} (${booking.car.price} ${csStrings.CAR_CURRENCY})`}
+                                                {`${booking.car.name} (${Helper.formatPrice(booking.car.price)} ${csStrings.CAR_CURRENCY})`}
                                             </div>
                                         </div>
                                         <div className='booking-detail' style={{ height: bookingDetailHeight }}>
@@ -442,7 +440,7 @@ const BookingList = (props) => {
                                         }
                                         <div className='booking-detail' style={{ height: bookingDetailHeight }}>
                                             <label className='booking-detail-title'>{strings.COST}</label>
-                                            <div className='booking-detail-value booking-price'>{`${booking.price} ${commonStrings.CURRENCY}`}</div>
+                                            <div className='booking-detail-value booking-price'>{`${Helper.formatPrice(booking.price)} ${commonStrings.CURRENCY}`}</div>
                                         </div>
 
                                         <div className='bs-buttons'>

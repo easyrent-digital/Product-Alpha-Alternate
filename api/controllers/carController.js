@@ -25,6 +25,10 @@ export const create = async (req, res) => {
         await car.save()
 
         if (car.image) {
+            if (!await Helper.exists(CDN)) {
+                await fs.mkdir(CDN, { recursive: true })
+            }
+
             const image = path.join(CDN_TEMP, body.image)
 
             if (await Helper.exists(image)) {
@@ -524,7 +528,7 @@ export const getFrontendCars = async (req, res) => {
 
         return res.json(data)
     } catch (err) {
-        console.error(`[car.getCars] ${strings.DB_ERROR} ${req.query.s}`, err)
+        console.error(`[car.getFrontendCars] ${strings.DB_ERROR} ${req.query.s}`, err)
         return res.status(400).send(strings.DB_ERROR + err)
     }
 }

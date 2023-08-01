@@ -81,7 +81,8 @@ const CreateBooking = () => {
     }
 
     const handleCarSelectListChange = useCallback((values) => {
-        setCar(values.length > 0 ? values[0]._id : null)
+        const car = Array.isArray(values) && values.length > 0 && values[0]
+        setCar(car)
     }, [])
 
     const handleStatusChange = (value) => {
@@ -157,7 +158,9 @@ const CreateBooking = () => {
     const handleSubmit = (e) => {
         e.preventDefault()
 
-        if (additionalDriver) {
+        const additionalDriverSet = Helper.carOptionAvailable(car, 'additionalDriver') && additionalDriver
+
+        if (additionalDriverSet) {
             const emailValid = _validateEmail(_email)
             if (!emailValid) {
                 return
@@ -176,7 +179,7 @@ const CreateBooking = () => {
 
         const booking = {
             company,
-            car,
+            car: car._id,
             driver,
             pickupLocation,
             dropOffLocation,
@@ -188,11 +191,11 @@ const CreateBooking = () => {
             theftProtection,
             collisionDamageWaiver,
             fullInsurance,
-            additionalDriver,
+            additionalDriver: additionalDriverSet,
         }
 
         let _additionalDriver
-        if (additionalDriver) {
+        if (additionalDriverSet) {
             _additionalDriver = {
                 fullName: _fullName,
                 email: _email,
@@ -204,20 +207,19 @@ const CreateBooking = () => {
         Helper.price(
             booking,
             null,
-            (price) => {
-                booking.price = price
+            async (price) => {
+                try {
+                    booking.price = price
 
-                BookingService.create({ booking, additionalDriver: _additionalDriver })
-                    .then(booking => {
-                        if (booking && booking._id) {
-                            navigate('/')
-                        } else {
-                            Helper.error()
-                        }
-                    })
-                    .catch((err) => {
-                        Helper.error(err)
-                    })
+                    const _booking = await BookingService.create({ booking, additionalDriver: _additionalDriver })
+                    if (_booking && _booking._id) {
+                        navigate('/')
+                    } else {
+                        Helper.error()
+                    }
+                } catch (err) {
+                    Helper.error(err)
+                }
             },
             (err) => {
                 Helper.error(err)
@@ -338,6 +340,7 @@ const CreateBooking = () => {
                                 }
                                 label={csStrings.CANCELLATION}
                                 className='checkbox-fcl'
+                                disabled={!Helper.carOptionAvailable(car, 'cancellation')}
                             />
                         </FormControl>
 
@@ -350,6 +353,7 @@ const CreateBooking = () => {
                                 }
                                 label={csStrings.AMENDMENTS}
                                 className='checkbox-fcl'
+                                disabled={!Helper.carOptionAvailable(car, 'amendments')}
                             />
                         </FormControl>
 
@@ -362,6 +366,7 @@ const CreateBooking = () => {
                                 }
                                 label={csStrings.THEFT_PROTECTION}
                                 className='checkbox-fcl'
+                                disabled={!Helper.carOptionAvailable(car, 'theftProtection')}
                             />
                         </FormControl>
 
@@ -374,6 +379,7 @@ const CreateBooking = () => {
                                 }
                                 label={csStrings.COLLISION_DAMAGE_WAVER}
                                 className='checkbox-fcl'
+                                disabled={!Helper.carOptionAvailable(car, 'collisionDamageWaiver')}
                             />
                         </FormControl>
 
@@ -386,6 +392,7 @@ const CreateBooking = () => {
                                 }
                                 label={csStrings.FULL_INSURANCE}
                                 className='checkbox-fcl'
+                                disabled={!Helper.carOptionAvailable(car, 'fullInsurance')}
                             />
                         </FormControl>
 
@@ -398,11 +405,12 @@ const CreateBooking = () => {
                                 }
                                 label={csStrings.ADDITIONAL_DRIVER}
                                 className='checkbox-fcl'
+                                disabled={!Helper.carOptionAvailable(car, 'additionalDriver')}
                             />
                         </FormControl>
 
                         {
-                            additionalDriver &&
+                            Helper.carOptionAvailable(car, 'additionalDriver') && additionalDriver &&
                             <>
                                 <div className='info'>
                                     <DriverIcon />

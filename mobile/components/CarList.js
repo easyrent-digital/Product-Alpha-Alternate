@@ -32,36 +32,31 @@ const CarList = (props) => {
         })()
     }, [])
 
-    const _fetch = (page, companies, pickupLocation, fuel, gearbox, mileage, deposit) => {
-        if (companies.length > 0) {
-            setLoading(true)
-            setFetch(true)
+    const _fetch = async (page, companies, pickupLocation, fuel, gearbox, mileage, deposit) => {
+        try {
+            if (companies.length > 0) {
+                setLoading(true)
+                setFetch(true)
 
-            const payload = { companies, pickupLocation, fuel, gearbox, mileage, deposit }
+                const payload = { companies, pickupLocation, fuel, gearbox, mileage, deposit }
 
-            CarService.getCars(payload, page, Env.CARS_PAGE_SIZE)
-                .then(data => {
-                    if (data) {
-                        const _data = data.length > 0 ? data[0] : {}
-                        if (_data.length === 0) _data.resultData = []
-                        const totalRecords = _data.pageInfo.length > 0 ? _data.pageInfo[0].totalRecords : 0
-                        const _rows = page === 1 ? _data.resultData : [...rows, ..._data.resultData]
-                        setRows(_rows)
-                        setFetch(_data.resultData.length > 0)
-                        if (props.onLoad) {
-                            props.onLoad({ rows: _data.resultData, rowCount: totalRecords })
-                        }
-                        setLoading(false)
-                    } else {
-                        Helper.error()
-                    }
-                })
-                .catch((err) => {
-                    Helper.error(err)
-                })
-        } else {
-            setRows([])
-            setFetch(false)
+                const data = await CarService.getCars(payload, page, Env.CARS_PAGE_SIZE)
+                const _data = Array.isArray(data) && data.length > 0 ? data[0] : { resultData: [] }
+                const totalRecords = _data.pageInfo.length > 0 ? _data.pageInfo[0].totalRecords : 0
+                const _rows = page === 1 ? _data.resultData : [...rows, ..._data.resultData]
+                
+                setRows(_rows)
+                setFetch(_data.resultData.length > 0)
+                if (props.onLoad) {
+                    props.onLoad({ rows: _data.resultData, rowCount: totalRecords })
+                }
+            } else {
+                setRows([])
+                setFetch(false)
+            }
+        } catch (err) {
+            Helper.error(err)
+        } finally {
             setLoading(false)
         }
     }
@@ -217,15 +212,15 @@ const CarList = (props) => {
 
                                     <View style={styles.price}>
                                         <Text style={styles.priceSecondary}>{Helper.getDays(Helper.days(props.from, props.to))}</Text>
-                                        <Text style={styles.pricePrimary}>{`${Helper.price(car, props.from, props.to)} ${i18n.t('CURRENCY')}`}</Text>
-                                        <Text style={styles.priceSecondary}>{`${i18n.t('PRICE_PER_DAY')} ${car.price} ${i18n.t('CURRENCY')}`}</Text>
+                                        <Text style={styles.pricePrimary}>{`${Helper.formatPrice(Helper.price(car, props.from, props.to))} ${i18n.t('CURRENCY')}`}</Text>
+                                        <Text style={styles.priceSecondary}>{`${i18n.t('PRICE_PER_DAY')} ${Helper.formatPrice(car.price)} ${i18n.t('CURRENCY')}`}</Text>
                                     </View>
                                 </View>
 
                                 <View style={styles.buttonContainer}>
                                     <Button style={styles.button} label={i18n.t('BOOK')} onPress={() => {
                                         const params = { car: car._id, pickupLocation: props.pickupLocation, dropOffLocation: props.dropOffLocation, from: props.from.getTime(), to: props.to.getTime() }
-                                        props.navigation.navigate('CreateBooking', params)
+                                        props.navigation.navigate('Checkout', params)
                                     }} />
                                 </View>
                             </View>

@@ -18,7 +18,7 @@ const Car = lazy(() => import('./pages/Car'))
 const CreateCar = lazy(() => import('./pages/CreateCar'))
 const UpdateCar = lazy(() => import('./pages/UpdateCar'))
 const Bookings = lazy(() => import('./pages/Bookings'))
-const Booking = lazy(() => import('./pages/Booking'))
+const UpdateBooking = lazy(() => import('./pages/UpdateBooking'))
 const CreateBooking = lazy(() => import('./pages/CreateBooking'))
 const Users = lazy(() => import('./pages/Users'))
 const User = lazy(() => import('./pages/User'))
@@ -61,6 +61,12 @@ const App = () => (
 					<Route exact path="/car" element={<Car />} />
 					<Route exact path='/create-car' element={<CreateCar />} />
 					<Route exact path='/update-car' element={<UpdateCar />} />
+					<Route exact path='/update-booking' element={<UpdateBooking />} />
+					<Route exact path='/create-booking' element={<CreateBooking />} />
+					<Route exact path='/users' element={<Users />} />
+					<Route exact path='/user' element={<User />} />
+					<Route exact path='/create-user' element={<CreateUser />} />
+					<Route exact path='/update-user' element={<UpdateUser />} />
 					<Route exact path='/settings' element={<Settings />} />
 					<Route exact path='/notifications' element={<Notifications />} />
 					<Route exact path='/about' element={<About />} />
