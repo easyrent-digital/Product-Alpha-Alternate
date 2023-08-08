@@ -1,11 +1,23 @@
 [![Backend CI](https://github.com/aelassas/bookcars/actions/workflows/backend.yml/badge.svg)](https://github.com/aelassas/bookcars/actions/workflows/backend.yml)
-[![Frontend CI](https://github.com/aelassas/bookcars/actions/workflows/frontend.yml/badge.svg)](https://github.com/aelassas/bookcars/actions/workflows/frontend.yml) [![CodeFactor](https://www.codefactor.io/repository/github/aelassas/bookcars/badge)](https://www.codefactor.io/repository/github/aelassas/bookcars) [![open in vscode](https://img.shields.io/badge/open%20in-vscode-1f425f.svg)](https://vscode.dev/github/aelassas/bookcars)
+[![Frontend CI](https://github.com/aelassas/bookcars/actions/workflows/frontend.yml/badge.svg)](https://github.com/aelassas/bookcars/actions/workflows/frontend.yml) [![CodeFactor](https://www.codefactor.io/repository/github/aelassas/bookcars/badge)](https://www.codefactor.io/repository/github/aelassas/bookcars) [![open in vscode](https://img.shields.io/badge/open%20in-vscode-1f425f.svg)](https://vscode.dev/github/aelassas/bookcars) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 
 <p align="center">
   <img src="https://bookcars.github.io/content/bookcars.drawio.png" alt="" width="380" />
 </p>
 
 BookCars is an open source car rental platform, supplier oriented, with a backend for managing car fleet and bookings, a frontend and a mobile app for car rental.
+
+BookCars is designed to work with multiple suppliers. Each supplier can manage his car fleet and bookings from the backend. BookCars can also work with only one supplier too.
+
+From the backend, admin users can create and manage suppliers, cars, locations, users and bookings.
+
+When an admin user creates a new supplier, the supplier will receive an automatic email for creating his account to access the backend so he can manage his car fleet and bookings.
+
+From the frontend and the mobile app, users can sign up, search for available cars depending on pickup and drop-off points and time, choose a car and checkout.
+
+<img src="https://bookcars.github.io/content/docker.png" alt="" width="220" />
+
+BookCars can run in a Docker container. Follow this step by step [guide](https://github.com/aelassas/bookcars/wiki/Docker) to walk you through on how to build BookCars Docker image and run it in a Docker container.
 
 # Features
 
@@ -37,7 +49,7 @@ In this section, you'll see the main pages of the frontend, the backend and the 
 
 From the frontend, the user can search for available cars, choose a car and checkout.
 
-Below is the main page of the frontend where the user can choose a pickup and drop-off locations, dates and time booking, and search for available cars.
+Below is the main page of the frontend where the user can choose pickup and drop-off points and time, and search for available cars.
 
 ![Frontend](https://github.com/aelassas/bookcars/blob/main/screenshots/frontend-1.png?raw=true)
 
@@ -75,7 +87,7 @@ From the mobile app, the user can search for available cars, choose a car and ch
 
 The user can also receive push notifications, if the status of his booking is updated.
 
-Below is the main page of the mobile app where the user can choose pickup and drop-off locations, dates and time booking, and search for available cars.
+Below is the main page of the mobile app where the user can choose pickup and drop-off points and time, and search for available cars.
   </p>
   <img src="https://github.com/aelassas/bookcars/blob/main/screenshots/mobileapp-1.jpg?raw=true" alt="" width="200" style="float: left; margin: 5px"/>
   <img src="https://github.com/aelassas/bookcars/blob/main/screenshots/mobileapp-2.jpg?raw=true" alt="" width="200" style="float: left; margin: 5px"/>

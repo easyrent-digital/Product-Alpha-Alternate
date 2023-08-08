@@ -4,18 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons'
 import Feather from 'react-native-vector-icons/Feather'
 Feather.loadFont()
 
-const RightButtonComponent = ({
-  inputHeight,
-  onClearPress,
-  onChevronPress,
-  isOpened,
-  showChevron,
-  showClear,
-  loading,
-  buttonsContainerStyle,
-  ChevronIconComponent,
-  ClearIconComponent
-}) => {
+const RightButtonComponent = ({ inputHeight, onClearPress, onChevronPress, isOpened, showChevron, showClear, loading, buttonsContainerStyle, ChevronIconComponent, ClearIconComponent }) => {
   const isOpenedAnimationValue = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
@@ -23,13 +12,13 @@ const RightButtonComponent = ({
       duration: 350,
       toValue: isOpened ? 1 : 0,
       useNativeDriver: true,
-      easing: Easing.bezier(0.3, 0.58, 0.25, 0.99)
+      easing: Easing.bezier(0.3, 0.58, 0.25, 0.99),
     }).start()
   }, [isOpened]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const chevronSpin = isOpenedAnimationValue.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '180deg']
+    outputRange: ['0deg', '180deg'],
   })
 
   return (
@@ -37,11 +26,12 @@ const RightButtonComponent = ({
       style={{
         ...styles.container,
         height: inputHeight,
-        ...buttonsContainerStyle
-      }}>
+        ...buttonsContainerStyle,
+      }}
+    >
       {!loading && showClear && (
         <Pressable onPress={onClearPress} hitSlop={15} style={styles.clearButton}>
-          {ClearIconComponent ?? <MaterialIcons name='clear' size={20} color='rgba(0, 0, 0, 0.54)' />}
+          {ClearIconComponent ?? <MaterialIcons name="clear" size={20} color="rgba(0, 0, 0, 0.54)" />}
         </Pressable>
       )}
       {loading && <ActivityIndicator color="#999" />}
@@ -67,17 +57,17 @@ const styles = StyleSheet.create({
     zIndex: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent'
+    backgroundColor: 'transparent',
   },
   clearButton: {
     width: 26,
     alignItems: 'center',
-    padding: 5
+    padding: 5,
   },
   chevronButton: {
     width: 26,
     alignItems: 'center',
     height: '100%',
-    justifyContent: 'center'
-  }
+    justifyContent: 'center',
+  },
 })

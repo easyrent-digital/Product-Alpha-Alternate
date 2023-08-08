@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Keyboard
-} from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Keyboard } from 'react-native'
 import { useIsFocused } from '@react-navigation/native'
 import Env from '../config/env.config'
 import i18n from '../lang/i18n'
@@ -80,7 +73,6 @@ const HomeScreen = ({ navigation, route }) => {
     } else {
       setVisible(false)
     }
-
   }, [route.params, isFocused]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const onLoad = () => {
@@ -130,20 +122,20 @@ const HomeScreen = ({ navigation, route }) => {
       return Helper.toast(i18n.t('DROP_OFF_LOCATION_EMPTY'))
     }
 
-    const params = { pickupLocation, dropOffLocation, from: from.getTime(), to: to.getTime() }
+    const params = {
+      pickupLocation,
+      dropOffLocation,
+      from: from.getTime(),
+      to: to.getTime(),
+    }
     navigation.navigate('Cars', params)
   }
 
   return (
     <Master style={styles.master} navigation={navigation} onLoad={onLoad} reload={reload} route={route}>
-      {init && visible &&
-        <ScrollView
-          contentContainerStyle={styles.container}
-          keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled
-        >
+      {init && visible && (
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
           <View style={styles.contentContainer}>
-
             <View style={styles.logo}>
               <Text style={styles.logoMain}>BookCars</Text>
               <Text style={styles.logoRegistered}>®</Text>
@@ -157,9 +149,10 @@ const HomeScreen = ({ navigation, route }) => {
                 width: '100%',
                 height: '100%',
                 left: 0,
-                top: 0
+                top: 0,
               }}
-              onPress={handleTouchableOpacityClick} />
+              onPress={handleTouchableOpacityClick}
+            />
 
             <LocationSelectList
               label={i18n.t('PICKUP_LOCATION')}
@@ -178,7 +171,7 @@ const HomeScreen = ({ navigation, route }) => {
             />
 
             <DateTimePicker
-              mode='date'
+              mode="date"
               locale={language}
               style={styles.component}
               label={i18n.t('FROM_DATE')}
@@ -189,7 +182,7 @@ const HomeScreen = ({ navigation, route }) => {
             />
 
             <DateTimePicker
-              mode='time'
+              mode="time"
               locale={language}
               style={styles.component}
               label={i18n.t('FROM_TIME')}
@@ -199,7 +192,7 @@ const HomeScreen = ({ navigation, route }) => {
             />
 
             <DateTimePicker
-              mode='date'
+              mode="date"
               locale={language}
               style={styles.component}
               label={i18n.t('TO_DATE')}
@@ -209,19 +202,11 @@ const HomeScreen = ({ navigation, route }) => {
               onPress={blurLocations}
             />
 
-            <DateTimePicker
-              mode='time'
-              locale={language}
-              style={styles.component}
-              label={i18n.t('TO_TIME')}
-              value={toTime}
-              onChange={(time) => setToTime(time)}
-              onPress={blurLocations}
-            />
+            <DateTimePicker mode="time" locale={language} style={styles.component} label={i18n.t('TO_TIME')} value={toTime} onChange={(time) => setToTime(time)} onPress={blurLocations} />
 
             <Button style={styles.component} label={i18n.t('SEARCH')} onPress={handleSearch} />
 
-            {!sameLocation &&
+            {!sameLocation && (
               <LocationSelectList
                 label={i18n.t('DROP_OFF_LOCATION')}
                 style={styles.component}
@@ -237,19 +222,19 @@ const HomeScreen = ({ navigation, route }) => {
                 close={closeDropOffLocation}
                 blur={blur}
               />
-            }
+            )}
 
             <Switch style={styles.component} label={i18n.t('SAME_LOCATION')} value={sameLocation} onValueChange={handleSameLocationChange} />
           </View>
         </ScrollView>
-      }
+      )}
     </Master>
   )
 }
 
 const styles = StyleSheet.create({
   master: {
-    flex: 1
+    flex: 1,
   },
   container: {
     flexGrow: 1,
@@ -260,7 +245,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     width: '100%',
     maxWidth: 480,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   logo: {
     alignSelf: 'stretch',
@@ -268,23 +253,23 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     marginBottom: 10,
-    maxWidth: 480
+    maxWidth: 480,
   },
   logoMain: {
     color: '#f37022',
     fontSize: 70,
     fontWeight: '700',
-    lineHeight: 125
+    lineHeight: 125,
   },
   logoRegistered: {
     color: '#f37022',
     fontSize: 15,
     fontWeight: '600',
-    marginTop: 40
+    marginTop: 40,
   },
   component: {
     alignSelf: 'stretch',
-    margin: 10
+    margin: 10,
   },
   footer: {
     position: 'absolute',
@@ -298,7 +283,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#ebebeb',
     alignSelf: 'stretch',
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
   copyright: {
     fontSize: 12,
@@ -308,8 +293,8 @@ const styles = StyleSheet.create({
     fontSize: 6,
     color: '#70757a',
     position: 'relative',
-    top: -5
-  }
+    top: -5,
+  },
 })
 
 export default HomeScreen

@@ -44,13 +44,13 @@ const DB_URI = `mongodb://${encodeURIComponent(DB_USERNAME)}:${encodeURIComponen
 
 let options = {}
 if (DB_SSL) {
-    options = {
-        ssl: true,
-        sslValidate: true,
-        sslKey: DB_SSL_KEY,
-        sslCert: DB_SSL_CERT,
-        sslCA: [DB_SSL_CA]
-    }
+  options = {
+    ssl: true,
+    sslValidate: true,
+    sslKey: DB_SSL_KEY,
+    sslCert: DB_SSL_CERT,
+    sslCA: [DB_SSL_CA],
+  }
 }
 
 // Enable Mongoose debug mode if DB_DEBUG is set to true
@@ -58,10 +58,10 @@ mongoose.set('debug', DB_DEBUG)
 // Set Mongoose Promise to use Node.js global Promise
 mongoose.Promise = global.Promise
 try {
-    await mongoose.connect(DB_URI, options)
-    console.log('Database is connected')
+  await mongoose.connect(DB_URI, options)
+  console.log('Database is connected')
 } catch (err) {
-    console.error('Cannot connect to the database:', err)
+  console.error('Cannot connect to the database:', err)
 }
 // setup morgan for logging
 app.use(morgan('combined'))
@@ -131,12 +131,4 @@ app.use('/', notificationRoutes)
 // Set the default language using the environment variable BC_DEFAULT_LANGUAGE
 strings.setLanguage(process.env.BC_DEFAULT_LANGUAGE)
 
-// -------- ERROR HANDLING
-// global error handler
-app.use(function (err, req, res, next) {
-    console.error(err.stack)
-    res.status(500).send('Something broke!')
-})
-
-// Export the configured Express app
 export default app

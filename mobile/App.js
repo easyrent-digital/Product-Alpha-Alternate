@@ -43,7 +43,7 @@ const App = () => {
     register()
 
     // This listener is fired whenever a user taps on or interacts with a notification (works when app is foregrounded, backgrounded, or killed)
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(async response => {
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(async (response) => {
       try {
         if (navigationRef.current) {
           const data = response.notification.request.content.data
@@ -66,7 +66,6 @@ const App = () => {
       Notifications.removeNotificationSubscription(responseListener.current)
     }
   }, [])
-
 
   setTimeout(() => {
     setAppIsReady(true)
@@ -92,7 +91,7 @@ const App = () => {
       <Provider>
         <RootSiblingParent>
           <NavigationContainer ref={navigationRef} onReady={onReady}>
-            <ExpoStatusBar style='light' backgroundColor='rgba(0, 0, 0, .9)' />
+            <ExpoStatusBar style="light" backgroundColor="rgba(0, 0, 0, .9)" />
             <DrawerNavigator />
           </NavigationContainer>
         </RootSiblingParent>
